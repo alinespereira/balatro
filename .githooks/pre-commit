@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+echo "Compilando..."
+opam exec -- dune build @all
+
+echo "Executando testes..."
+opam exec -- dune runtest --force
