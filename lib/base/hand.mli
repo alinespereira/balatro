@@ -1,5 +1,3 @@
-open Scoring
-
 type t =
   | High_card
   | Pair
@@ -14,11 +12,7 @@ type t =
   | Five_of_a_kind
   | Flush_house
   | Flush_five
-
-val is_full_house : Card.t list -> bool
-(** Whether exactly five cards contain three of one rank and two of another.
-    Suits and decorations are ignored. *)
+[@@deriving show, eq, enum, ord]
 
 type record = { hand : t; level : int; scoring_effect : Effect.t }
 
-val base_hands : (t * record) list

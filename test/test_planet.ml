@@ -1,7 +1,9 @@
 open Balatro
 open Balatro.Base
 open Balatro.Base.Consumables
-open Balatro.Scoring
+module Effect = Balatro.Base.Effect
+module EffectScoring = Balatro.Scoring.Effect
+module HandScoring = Balatro.Scoring.Hand
 
 let () =
   let cases =
@@ -21,21 +23,21 @@ let () =
   List.iter
     (fun (planet, hand, (chips, mult)) ->
       assert (
-        Planet.score planet hand
+        HandScoring.score planet hand
         = [ Effect.AddChips chips; Effect.AddMult mult ]))
     cases;
-  assert (Planet.score Planet.Pluto Hand.Pair = []);
-  assert (Planet.score Planet.Mercury Hand.High_card = []);
-  assert (Planet.score Planet.Neptune Hand.Flush_five = []);
-  let original = List.assoc Hand.Full_house Hand.base_hands in
-  let upgraded = Planet.consume Planet.Earth original in
+  assert (HandScoring.score Planet.Pluto Hand.Pair = []);
+  assert (HandScoring.score Planet.Mercury Hand.High_card = []);
+  assert (HandScoring.score Planet.Neptune Hand.Flush_five = []);
+  let original = List.assoc Hand.Full_house HandScoring.base_hands in
+  let upgraded = HandScoring.consume Planet.Earth original in
   assert (upgraded.level = 2);
-  assert (upgraded.scoring_effect = Effect.create 65 6);
-  let upgraded_again = Planet.consume Planet.Earth upgraded in
+  assert (upgraded.scoring_effect = Effect.create ~chips:65 ~mult:6);
+  let upgraded_again = HandScoring.consume Planet.Earth upgraded in
   assert (upgraded_again.level = 3);
-  assert (upgraded_again.scoring_effect = Effect.create 90 8);
-  assert (Planet.consume Planet.Pluto original = original);
+  assert (upgraded_again.scoring_effect = Effect.create ~chips:90 ~mult:8);
+  assert (HandScoring.consume Planet.Pluto original = original);
   assert (original.level = 1);
-  assert (original.scoring_effect = Effect.create 40 4);
+  assert (original.scoring_effect = Effect.create ~chips:40 ~mult:4);
   assert (
-    Effect.apply (Effect.MultMult 3) (Effect.create 40 4) = Effect.create 40 12)
+    EffectScoring.apply (Effect.MultMult 3) (Effect.create ~chips:40 ~mult:4) = Effect.create ~chips:40 ~mult:12)

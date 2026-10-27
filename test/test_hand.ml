@@ -8,7 +8,7 @@ let () =
   let third = List.nth Card.all_ranks 2 in
   let cards ranks = List.map (Card.create suit) ranks in
   let check expected ranks =
-    assert (Hand.is_full_house (cards ranks) = expected)
+    assert (Scoring.Hand.is_full_house (cards ranks) = expected)
   in
   check true [ first; second; first; second; first ];
   check true [ second; first; first; second; first ];

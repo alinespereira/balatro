@@ -1,5 +1,3 @@
-open Scoring
-
 type suit = Clubs | Diamonds | Hearts | Spades
 [@@deriving show, eq, enum, ord]
 
@@ -19,9 +17,9 @@ type rank =
   | Ace
 [@@deriving show, eq, enum, ord]
 
-type t = { suit : suit; rank : rank; decorations : Effect.decorations }
+type t = { suit : suit; rank : rank; decorations : Decoration.t }
 
-let create suit rank = { suit; rank; decorations = Effect.no_decorations }
+let create suit rank = { suit; rank; decorations = Decoration.no_decorations }
 let suit { suit; rank } = suit
 let rank { suit; rank } = rank
 let all_suits = [ Clubs; Diamonds; Hearts; Spades ]

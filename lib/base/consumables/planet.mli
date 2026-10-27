@@ -1,5 +1,3 @@
-open Scoring
-
 type t =
   | Pluto
   | Mercury
@@ -10,7 +8,4 @@ type t =
   | Earth
   | Mars
   | Neptune
-
-val score : t -> Hand.t -> Effect.change list
-
-val consume : t -> Hand.record -> Hand.record
+[@@deriving show, eq, enum, ord]
