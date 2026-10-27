@@ -2,6 +2,7 @@
 
 (library
  (name balatro)
+ (libraries range)
  (preprocess
   (pps
     ppx_deriving.show
