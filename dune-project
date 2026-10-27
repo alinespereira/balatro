@@ -5,22 +5,17 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github alinespereira/balatro))
 
-(authors "Author Name <author@example.com>")
+(authors "Aline <line.asramos@gmail.com>")
 
-(maintainers "Maintainer Name <maintainer@example.com>")
-
-(license LICENSE)
-
-(documentation https://url/to/documentation)
+(maintainers "Aline <line.asramos@gmail.com>")
 
 (package
  (name balatro)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml)
+ (synopsis "An OCaml model of Balatro cards and scoring rules")
+ (description
+  "Work-in-progress OCaml project modeling Balatro cards, decks, poker hands, consumables, and scoring effects.")
+ (depends ocaml ppx_deriving)
  (tags
-  ("add topics" "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
+  ("balatro" "card-game" "poker")))

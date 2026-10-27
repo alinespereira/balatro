@@ -2,4 +2,9 @@
  (public_name balatro)
  (name main)
  (libraries balatro)
- (preprocess (pps ppx_deriving.show ppx_deriving.ord)))
+ (preprocess
+  (pps
+    ppx_deriving.show
+    ppx_deriving.eq
+    ppx_deriving.enum
+    ppx_deriving.ord)))
