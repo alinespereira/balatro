@@ -1,4 +1,5 @@
 (executable
  (public_name balatro)
  (name main)
- (libraries balatro))
+ (libraries balatro)
+ (preprocess (pps ppx_deriving.show ppx_deriving.ord)))

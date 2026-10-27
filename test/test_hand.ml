@@ -1,4 +1,5 @@
 open Balatro
+open Balatro.Base
 
 let () =
   let suit = List.hd Card.all_suits in

@@ -1,3 +1,5 @@
+open Scoring
+
 type t =
   | Pluto
   | Mercury
@@ -9,6 +11,6 @@ type t =
   | Mars
   | Neptune
 
-val score : t -> Hand.t -> Scoring_effect.scoring_change list
+val score : t -> Hand.t -> Effect.change list
 
 val consume : t -> Hand.record -> Hand.record

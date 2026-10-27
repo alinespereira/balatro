@@ -1,4 +1,5 @@
 open Balatro
+open Balatro.Base
 
 let test_board color =
   let board = Board.create color in

@@ -1,5 +1,5 @@
 open Hand
-open Scoring_effect
+open Scoring.Effect
 
 type t =
   | Pluto
@@ -11,6 +11,7 @@ type t =
   | Earth
   | Mars
   | Neptune
+[@@deriving show, eq, enum]
 
 let score planet hand =
   match (planet, hand) with

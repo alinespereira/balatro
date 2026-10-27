@@ -1,3 +1,5 @@
+open Scoring
+
 type t =
   | High_card
   | Pair
@@ -17,6 +19,6 @@ val is_full_house : Card.t list -> bool
 (** Whether exactly five cards contain three of one rank and two of another.
     Suits and decorations are ignored. *)
 
-type record = { hand : t; level : int; scoring_effect : Scoring_effect.t }
+type record = { hand : t; level : int; scoring_effect : Effect.t }
 
 val base_hands : (t * record) list

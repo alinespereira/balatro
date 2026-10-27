@@ -17,3 +17,4 @@ type t =
   | Cryptid
   | The_soul
   | Black_hole
+[@@deriving show, eq, enum, ord]

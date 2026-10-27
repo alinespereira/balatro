@@ -12,7 +12,7 @@ type decorations = {
 let no_decorations = { enhancement = None; edition = None; seal = None }
 let create chips mult = { chips; mult }
 
-type scoring_change = AddChips of int | AddMult of int | MultMult of int
+type change = AddChips of int | AddMult of int | MultMult of int
 
 let apply change eff =
   match change with

@@ -1,3 +1,5 @@
+open Scoring
+
 type t =
   | High_card
   | Pair
@@ -12,8 +14,9 @@ type t =
   | Five_of_a_kind
   | Flush_house
   | Flush_five
+[@@deriving show, eq, enum, ord]
 
-type record = { hand : t; level : int; scoring_effect : Scoring_effect.t }
+type record = { hand : t; level : int; scoring_effect : Effect.t }
 
 let base_scores =
   [
@@ -33,7 +36,7 @@ let base_scores =
   ]
 
 let make_hand (hand, (chips, mult)) =
-  (hand, { hand; level = 1; scoring_effect = Scoring_effect.create chips mult })
+  (hand, { hand; level = 1; scoring_effect = Effect.create chips mult })
 
 let base_hands = List.map make_hand base_scores
 

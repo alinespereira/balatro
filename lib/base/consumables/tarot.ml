@@ -21,3 +21,4 @@ type t =
   | The_sun
   | Judgement
   | The_world
+[@@deriving show, eq, enum, ord]

@@ -1,3 +1,6 @@
+open Base
+open Consumables
+
 type consumable =
   | Tarot of Tarot.t
   | Planet of Planet.t

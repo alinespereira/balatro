@@ -1,4 +1,7 @@
 open Balatro
+open Balatro.Base
+open Balatro.Base.Consumables
+open Balatro.Scoring
 
 let () =
   let cases =
@@ -17,8 +20,9 @@ let () =
   in
   List.iter
     (fun (planet, hand, (chips, mult)) ->
-      assert (Planet.score planet hand =
-        [ Scoring_effect.AddChips chips; Scoring_effect.AddMult mult ]))
+      assert (
+        Planet.score planet hand
+        = [ Effect.AddChips chips; Effect.AddMult mult ]))
     cases;
   assert (Planet.score Planet.Pluto Hand.Pair = []);
   assert (Planet.score Planet.Mercury Hand.High_card = []);
@@ -26,14 +30,12 @@ let () =
   let original = List.assoc Hand.Full_house Hand.base_hands in
   let upgraded = Planet.consume Planet.Earth original in
   assert (upgraded.level = 2);
-  assert (upgraded.scoring_effect = Scoring_effect.create 65 6);
+  assert (upgraded.scoring_effect = Effect.create 65 6);
   let upgraded_again = Planet.consume Planet.Earth upgraded in
   assert (upgraded_again.level = 3);
-  assert (upgraded_again.scoring_effect = Scoring_effect.create 90 8);
+  assert (upgraded_again.scoring_effect = Effect.create 90 8);
   assert (Planet.consume Planet.Pluto original = original);
   assert (original.level = 1);
-  assert (original.scoring_effect = Scoring_effect.create 40 4);
-  assert
-    (Scoring_effect.apply (Scoring_effect.MultMult 3)
-       (Scoring_effect.create 40 4)
-     = Scoring_effect.create 40 12)
+  assert (original.scoring_effect = Effect.create 40 4);
+  assert (
+    Effect.apply (Effect.MultMult 3) (Effect.create 40 4) = Effect.create 40 12)
