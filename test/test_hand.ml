@@ -95,28 +95,28 @@ let detectors =
 ;;
 
 (* Runs every detector on every example and reports all failures before exiting, so one
-   broken detector does not hide the others. *)
+   broken detector does not hide the others. A detector that is not implemented yet is
+   reported once instead of once per example. *)
 let () =
   let failures = ref 0 in
   List.iter
     (fun (category, detect) ->
-       List.iter
-         (fun (name, cards, expected_category) ->
-            let expected = expected_category = Some category in
-            let fail message =
-              incr failures;
-              Printf.printf
-                "FAIL %s, %s [%s]: %s\n"
-                (Poker.Hand.show category)
-                name
-                cards
-                message
-            in
-            match detect (hand cards) with
-            | actual when actual = expected -> ()
-            | actual -> fail (Printf.sprintf "expected %b, got %b" expected actual)
-            | exception Failure message -> fail ("raised " ^ message))
-         examples)
+       let fail message =
+         incr failures;
+         Printf.printf "FAIL %s, %s\n" (Poker.Hand.show category) message
+       in
+       try
+         List.iter
+           (fun (name, cards, expected_category) ->
+              let expected = expected_category = Some category in
+              let actual = detect (hand cards) in
+              if actual <> expected then (
+                let example = Printf.sprintf "%s [%s]" name cards in
+                fail (Printf.sprintf "%s: expected %b, got %b" example expected actual)
+              ))
+           examples
+       with
+       | Failure message -> fail ("raised " ^ message))
     detectors;
   if !failures > 0 then (
     Printf.printf "%d failure(s)\n" !failures;
