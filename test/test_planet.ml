@@ -1,6 +1,6 @@
 open Balatro
 open Balatro.Base
-open Balatro.Base.Consumables
+open Balatro.Consumables
 module HandScoring = Balatro.Scoring.Hand
 
 let () =
@@ -16,6 +16,9 @@ let () =
       Planet.Mars, Poker_hand.FourOfAKind, (30, 3.);
       Planet.Neptune, Poker_hand.StraightFlush, (40, 4.);
       Planet.Neptune, Poker_hand.RoyalFlush, (40, 4.);
+      Planet.PlanetX, Poker_hand.FiveOfAKind, (35, 3.);
+      Planet.Ceres, Poker_hand.FlushHouse, (40, 4.);
+      Planet.Eris, Poker_hand.FlushFive, (50, 3.);
     ]
   in
   List.iter
