@@ -23,6 +23,10 @@ val all : t list
 (** Chips and mult of the category at level 1. *)
 val base_score : t -> Score.t
 
+(** The planet that levels up the hand. Straight flush and royal flush share
+    Neptune. *)
+val planet : t -> Consumables.Planet.t
+
 type evaluation = {
   category: t;
   scoring_cards: Card.t list;

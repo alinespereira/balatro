@@ -49,6 +49,22 @@ let base_score = function
   | FlushFive -> Score.create ~chips:160 ~mult:16.
 ;;
 
+let planet : t -> Consumables.Planet.t = function
+  | HighCard -> Pluto
+  | Pair -> Mercury
+  | TwoPair -> Uranus
+  | ThreeOfAKind -> Venus
+  | Straight -> Saturn
+  | Flush -> Jupiter
+  | FullHouse -> Earth
+  | FourOfAKind -> Mars
+  | StraightFlush -> Neptune
+  | RoyalFlush -> Neptune
+  | FiveOfAKind -> PlanetX
+  | FlushHouse -> Ceres
+  | FlushFive -> Eris
+;;
+
 type evaluation = {
   category: t;
   scoring_cards: Card.t list;

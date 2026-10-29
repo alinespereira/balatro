@@ -13,22 +13,6 @@ type t =
   | Eris
 [@@deriving show, eq, ord]
 
-let of_hand : Poker.Hand.t -> t = function
-  | HighCard -> Pluto
-  | Pair -> Mercury
-  | TwoPair -> Uranus
-  | ThreeOfAKind -> Venus
-  | Straight -> Saturn
-  | Flush -> Jupiter
-  | FullHouse -> Earth
-  | FourOfAKind -> Mars
-  | StraightFlush -> Neptune
-  | RoyalFlush -> Neptune
-  | FiveOfAKind -> PlanetX
-  | FlushHouse -> Ceres
-  | FlushFive -> Eris
-;;
-
 let bonus : t -> Score.change list = function
   | Pluto -> [AddChips 10; AddMult 1.]
   | Mercury -> [AddChips 15; AddMult 1.]

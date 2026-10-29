@@ -21,29 +21,29 @@ let () =
   in
   List.iter
     (fun (planet, hand, (chips, mult)) ->
-       assert (Planet.equal (Planet.of_hand hand) planet);
+       assert (Planet.equal (Poker.Hand.planet hand) planet);
        assert (Planet.bonus planet = [Score.AddChips chips; Score.AddMult mult]))
     cases;
-  let levels = Hand.Levels.initial in
-  let full_house = Hand.Levels.get Poker.Hand.FullHouse levels in
+  let levels = Poker.Levels.initial in
+  let full_house = Poker.Levels.get Poker.Hand.FullHouse levels in
   assert (full_house.level = 1);
   assert (Score.equal full_house.score (Score.create ~chips:40 ~mult:4.));
-  let levels = Hand.Levels.use_planet Planet.Earth levels in
-  let full_house = Hand.Levels.get Poker.Hand.FullHouse levels in
+  let levels = Poker.Levels.use_planet Planet.Earth levels in
+  let full_house = Poker.Levels.get Poker.Hand.FullHouse levels in
   assert (full_house.level = 2);
   assert (Score.equal full_house.score (Score.create ~chips:65 ~mult:6.));
-  let levels = Hand.Levels.use_planet Planet.Earth levels in
-  let full_house = Hand.Levels.get Poker.Hand.FullHouse levels in
+  let levels = Poker.Levels.use_planet Planet.Earth levels in
+  let full_house = Poker.Levels.get Poker.Hand.FullHouse levels in
   assert (full_house.level = 3);
   assert (Score.equal full_house.score (Score.create ~chips:90 ~mult:8.));
   (* A planet only levels up its own hands. *)
-  assert ((Hand.Levels.get Poker.Hand.Pair levels).level = 1);
+  assert ((Poker.Levels.get Poker.Hand.Pair levels).level = 1);
   (* Neptune levels up straight flush and royal flush together. *)
-  let levels = Hand.Levels.use_planet Planet.Neptune levels in
-  assert ((Hand.Levels.get Poker.Hand.StraightFlush levels).level = 2);
-  assert ((Hand.Levels.get Poker.Hand.RoyalFlush levels).level = 2);
+  let levels = Poker.Levels.use_planet Planet.Neptune levels in
+  assert ((Poker.Levels.get Poker.Hand.StraightFlush levels).level = 2);
+  assert ((Poker.Levels.get Poker.Hand.RoyalFlush levels).level = 2);
   (* The initial levels are not changed. *)
-  assert ((Hand.Levels.get Poker.Hand.FullHouse Hand.Levels.initial).level = 1);
+  assert ((Poker.Levels.get Poker.Hand.FullHouse Poker.Levels.initial).level = 1);
   assert (
     Score.equal
       (Score.apply (Score.TimesMult 1.5) (Score.create ~chips:40 ~mult:4.))

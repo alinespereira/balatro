@@ -65,8 +65,9 @@ Ele prepara OCaml 5.4.1, instala as dependências, compila o projeto e executa o
 
 ```text
 bin/                Executável
-lib/                Cartas, baralho, tabuleiro, mãos de pôquer e pontuação
+lib/                Cartas, baralho, tabuleiro e pontuação
 lib/consumables/    Planetas, tarôs e cartas espectrais
+lib/poker/          Mãos de pôquer e seus níveis
 test/               Testes
 .githooks/          Hooks locais versionados
 .github/workflows/  Configuração do CI
@@ -77,7 +78,7 @@ test/               Testes
 Cada módulo reúne um conceito do jogo: o tipo e as funções que trabalham com ele. O `.mli` decide o que fica visível:
 
 - tipos sem regra a proteger (naipes, valores, planetas, `Score.t`) expõem os construtores;
-- tipos com uma regra a proteger (`Deck.t`, `Hand.Levels.t`, `Board.t`) são abstratos;
-- `private` permite ler um valor de fora sem poder construí-lo (`Hand.Levels.entry`).
+- tipos com uma regra a proteger (`Deck.t`, `Poker.Levels.t`, `Board.t`) são abstratos;
+- `private` permite ler um valor de fora sem poder construí-lo (`Poker.Levels.entry`).
 
 Construtores usam PascalCase (`HighCard`, `TheFool`). Módulos que vêm de arquivos seguem o nome do arquivo (`poker/hand.ml` vira `Poker.Hand`).
