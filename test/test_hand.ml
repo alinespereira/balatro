@@ -1,5 +1,4 @@
 open Balatro
-open Balatro.Base
 
 let () =
   let cards ranks = List.map (Card.create Card.Clubs) ranks in

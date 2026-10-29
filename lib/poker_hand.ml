@@ -51,13 +51,13 @@ let base_score = function
 
 type evaluation = {
   category: t;
-  scoring_cards: Base.Card.t list;
+  scoring_cards: Card.t list;
 }
 
 type error = InvalidCardCount of int
 
-let group_by_rank = Util.groups ~key:(fun (card : Base.Card.t) -> card.rank)
-let group_by_suit = Util.groups ~key:(fun (card : Base.Card.t) -> card.suit)
+let group_by_rank = Util.groups ~key:(fun (card : Card.t) -> card.rank)
+let group_by_suit = Util.groups ~key:(fun (card : Card.t) -> card.suit)
 
 let rank_counts cards =
   let groups = group_by_rank cards in
@@ -88,7 +88,7 @@ let is_flush_five _ = failwith "Not implemented"
 
 let get_high_card cards =
   cards
-  |> List.sort (fun (card_1 : Base.Card.t) (card_2 : Base.Card.t) ->
-    Base.Card.compare_suit card_2.suit card_1.suit)
+  |> List.sort (fun (card_1 : Card.t) (card_2 : Card.t) ->
+    Card.compare_suit card_2.suit card_1.suit)
   |> List.hd
 ;;

@@ -1,5 +1,3 @@
-open Base
-
 type t
 
 val create : Deck.color -> t
