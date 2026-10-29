@@ -11,8 +11,8 @@ type t = {
 let create color =
   let cards =
     List.concat_map
-      (fun suit -> List.map (fun rank -> Card.create suit rank) Card.all_ranks)
-      Card.all_suits
+      (fun suit -> List.map (fun rank -> Card.create suit rank) Card.all_of_rank)
+      Card.all_of_suit
   in
   { cards; color }
 ;;

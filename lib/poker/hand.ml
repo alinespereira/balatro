@@ -12,25 +12,7 @@ type t =
   | FiveOfAKind
   | FlushHouse
   | FlushFive
-[@@deriving show, eq, ord]
-
-let all =
-  [
-    HighCard;
-    Pair;
-    TwoPair;
-    ThreeOfAKind;
-    Straight;
-    Flush;
-    FullHouse;
-    FourOfAKind;
-    StraightFlush;
-    RoyalFlush;
-    FiveOfAKind;
-    FlushHouse;
-    FlushFive;
-  ]
-;;
+[@@deriving show, eq, ord, enum, enumerate]
 
 let base_score = function
   | HighCard -> Score.create ~chips:5 ~mult:1.

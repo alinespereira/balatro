@@ -3,10 +3,10 @@ type suit =
   | Diamonds
   | Hearts
   | Spades
-[@@deriving show, eq, ord]
+[@@deriving show, eq, ord, enum, enumerate]
 
 type rank =
-  | Two
+  | Two [@value 2]
   | Three
   | Four
   | Five
@@ -19,7 +19,7 @@ type rank =
   | Queen
   | King
   | Ace
-[@@deriving show, eq, ord]
+[@@deriving show, eq, ord, enum, enumerate]
 
 type t = {
   suit: suit;
@@ -28,11 +28,6 @@ type t = {
 }
 
 let create suit rank = { suit; rank; decoration = Decoration.none }
-let all_suits = [Clubs; Diamonds; Hearts; Spades]
-
-let all_ranks =
-  [Two; Three; Four; Five; Six; Seven; Eight; Nine; Ten; Jack; Queen; King; Ace]
-;;
 
 module RankMap = Map.Make (struct
     type t = rank

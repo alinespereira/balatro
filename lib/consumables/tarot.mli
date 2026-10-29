@@ -21,4 +21,4 @@ type t =
   | TheSun
   | Judgement
   | TheWorld
-[@@deriving show, eq, ord]
+[@@deriving show, eq, ord, enum, enumerate]

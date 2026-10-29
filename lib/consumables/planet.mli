@@ -11,7 +11,7 @@ type t =
   | PlanetX
   | Ceres
   | Eris
-[@@deriving show, eq, ord]
+[@@deriving show, eq, ord, enum, enumerate]
 
 (** What one level up adds to a hand's score. *)
 val bonus : t -> Score.change list

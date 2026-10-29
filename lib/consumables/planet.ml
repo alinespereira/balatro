@@ -11,7 +11,7 @@ type t =
   | PlanetX
   | Ceres
   | Eris
-[@@deriving show, eq, ord]
+[@@deriving show, eq, ord, enum, enumerate]
 
 let bonus : t -> Score.change list = function
   | Pluto -> [AddChips 10; AddMult 1.]
