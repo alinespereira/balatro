@@ -1,11 +1,3 @@
-open Base
-open Consumables
-
-type consumable =
-  | Tarot of Tarot.t
-  | Planet of Planet.t
-  | Spectral of Spectral.t
-
 type 'a interval = {
   min: 'a;
   max: 'a;
@@ -15,7 +7,7 @@ type t = {
   deck: Deck.t;
   draw: Card.t list;
   jokers: Joker.t list;
-  consumables: consumable list;
+  consumables: Consumables.Consumable.t list;
   draw_size: int;
   max_jokers: int;
   max_consumables: int;

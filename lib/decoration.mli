@@ -26,4 +26,4 @@ type t = {
   seal: seal option;
 }
 
-let no_decorations = { enhancement = None; edition = None; seal = None }
+val none : t

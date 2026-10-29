@@ -1,5 +1,4 @@
 open Balatro
-open Balatro.Base
 
 let test_board color =
   let board = Board.create color in
@@ -11,7 +10,7 @@ let test_board color =
   let remaining = Deck.cards (Board.deck filled) in
   assert (List.length drawn = 1);
   assert (List.length remaining = 51);
-  let same_card a b = Card.suit a = Card.suit b && Card.rank a = Card.rank b in
+  let same_card (a : Card.t) (b : Card.t) = a.suit = b.suit && a.rank = b.rank in
   List.iter
     (fun card ->
        let occurrences = List.filter (same_card card) (drawn @ remaining) in

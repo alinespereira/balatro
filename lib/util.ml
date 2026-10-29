@@ -1,4 +1,4 @@
-exception Invalid_sample_position
+exception InvalidSamplePosition
 
 let split_at n lst =
   let rec loop n rest acc =
@@ -18,16 +18,8 @@ let draw lst =
   let pos = Random.int n in
   let head, tail = split_at pos lst in
   match tail with
-  | [] -> raise Invalid_sample_position
+  | [] -> raise InvalidSamplePosition
   | sample :: rest -> sample, head @ rest
-;;
-
-let list_of_enum min_enum max_enum element_of_enum =
-  let indices = Range.from min_enum max_enum in
-  Range.fold_right [] indices ~f:(fun acc indice ->
-    match element_of_enum indice with
-    | Some element -> element :: acc
-    | None -> acc)
 ;;
 
 let groups (type k) ~(key : 'a -> k) (xs : 'a list) =
