@@ -6,26 +6,26 @@ module HandScoring = Balatro.Scoring.Hand
 let () =
   let cases =
     [
-      Planet.Pluto, Hand.HighCard, (10, 1.);
-      Planet.Mercury, Hand.Pair, (15, 1.);
-      Planet.Uranus, Hand.TwoPair, (20, 1.);
-      Planet.Venus, Hand.ThreeOfAKind, (20, 2.);
-      Planet.Saturn, Hand.Straight, (30, 3.);
-      Planet.Jupiter, Hand.Flush, (15, 2.);
-      Planet.Earth, Hand.FullHouse, (25, 2.);
-      Planet.Mars, Hand.FourOfAKind, (30, 3.);
-      Planet.Neptune, Hand.StraightFlush, (40, 4.);
-      Planet.Neptune, Hand.RoyalFlush, (40, 4.);
+      Planet.Pluto, Poker_hand.HighCard, (10, 1.);
+      Planet.Mercury, Poker_hand.Pair, (15, 1.);
+      Planet.Uranus, Poker_hand.TwoPair, (20, 1.);
+      Planet.Venus, Poker_hand.ThreeOfAKind, (20, 2.);
+      Planet.Saturn, Poker_hand.Straight, (30, 3.);
+      Planet.Jupiter, Poker_hand.Flush, (15, 2.);
+      Planet.Earth, Poker_hand.FullHouse, (25, 2.);
+      Planet.Mars, Poker_hand.FourOfAKind, (30, 3.);
+      Planet.Neptune, Poker_hand.StraightFlush, (40, 4.);
+      Planet.Neptune, Poker_hand.RoyalFlush, (40, 4.);
     ]
   in
   List.iter
     (fun (planet, hand, (chips, mult)) ->
        assert (HandScoring.score planet hand = [Score.AddChips chips; Score.AddMult mult]))
     cases;
-  assert (HandScoring.score Planet.Pluto Hand.Pair = []);
-  assert (HandScoring.score Planet.Mercury Hand.HighCard = []);
-  assert (HandScoring.score Planet.Neptune Hand.FlushFive = []);
-  let original = List.assoc Hand.FullHouse HandScoring.base_hands in
+  assert (HandScoring.score Planet.Pluto Poker_hand.Pair = []);
+  assert (HandScoring.score Planet.Mercury Poker_hand.HighCard = []);
+  assert (HandScoring.score Planet.Neptune Poker_hand.FlushFive = []);
+  let original = List.assoc Poker_hand.FullHouse HandScoring.base_hands in
   let upgraded = HandScoring.consume Planet.Earth original in
   assert (upgraded.level = 2);
   assert (Score.equal upgraded.scoring_effect (Score.create ~chips:65 ~mult:6.));
