@@ -3,7 +3,7 @@ type suit =
   | Diamonds
   | Hearts
   | Spades
-[@@deriving show, eq, ord]
+[@@deriving show, eq, ord, enum, enumerate]
 
 type rank =
   | Two
@@ -19,7 +19,7 @@ type rank =
   | Queen
   | King
   | Ace
-[@@deriving show, eq, ord]
+[@@deriving show, eq, ord, enum, enumerate]
 
 type t = {
   suit: suit;
@@ -28,8 +28,6 @@ type t = {
 }
 
 val create : suit -> rank -> t
-val all_suits : suit list
-val all_ranks : rank list
 
 module RankMap : Map.S with type key = rank
 module SuitMap : Map.S with type key = suit

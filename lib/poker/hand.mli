@@ -15,10 +15,7 @@ type t =
   | FiveOfAKind
   | FlushHouse
   | FlushFive
-[@@deriving show, eq, ord]
-
-(** Every category, from weakest to strongest. *)
-val all : t list
+[@@deriving show, eq, ord, enum, enumerate]
 
 (** Chips and mult of the category at level 1. *)
 val base_score : t -> Score.t
