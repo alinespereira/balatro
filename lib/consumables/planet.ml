@@ -22,9 +22,8 @@ let of_hand : Poker.Hand.t -> t = function
   | Flush -> Jupiter
   | FullHouse -> Earth
   | FourOfAKind -> Mars
-  | StraightFlush
-   |RoyalFlush ->
-    Neptune
+  | StraightFlush -> Neptune
+  | RoyalFlush -> Neptune
   | FiveOfAKind -> PlanetX
   | FlushHouse -> Ceres
   | FlushFive -> Eris
