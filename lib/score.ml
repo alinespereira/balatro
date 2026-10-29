@@ -19,5 +19,8 @@ let apply change score =
   | TimesMult n -> { score with mult = score.mult *. n }
 ;;
 
-let apply_all changes score = List.fold_left (fun acc change -> apply change acc) score changes
+let apply_all changes score =
+  List.fold_left (fun acc change -> apply change acc) score changes
+;;
+
 let total { chips; mult } = Float.of_int chips *. mult
