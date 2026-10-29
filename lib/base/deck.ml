@@ -1,5 +1,12 @@
-type color = Red | Blue | Green
-type t = { cards : Card.t list; color : color }
+type color =
+  | Red
+  | Blue
+  | Green
+
+type t = {
+  cards: Card.t list;
+  color: color;
+}
 
 let create color =
   let cards =
@@ -8,6 +15,7 @@ let create color =
       Card.all_suits
   in
   { cards; color }
+;;
 
 let cards { cards } = cards
 let set_cards cards deck = { deck with cards }

@@ -1,6 +1,9 @@
 type t
 
-type color = Red | Blue | Green
+type color =
+  | Red
+  | Blue
+  | Green
 
 val create : color -> t
 val cards : t -> Card.t list

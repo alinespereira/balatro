@@ -1,5 +1,11 @@
-type t = { chips : int; mult : int }
+type t = {
+  chips: int;
+  mult: int;
+}
 
 val create : chips:int -> mult:int -> t
 
-type change = AddChips of int | AddMult of int | MultMult of int
+type change =
+  | AddChips of int
+  | AddMult of int
+  | MultMult of int

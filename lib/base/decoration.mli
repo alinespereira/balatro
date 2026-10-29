@@ -1,5 +1,4 @@
 type t
-
 type enhancement
 type edition
 type seal

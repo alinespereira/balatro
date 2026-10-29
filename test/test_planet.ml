@@ -8,23 +8,22 @@ module HandScoring = Balatro.Scoring.Hand
 let () =
   let cases =
     [
-      (Planet.Pluto, Hand.High_card, (10, 1));
-      (Planet.Mercury, Hand.Pair, (15, 1));
-      (Planet.Uranus, Hand.Two_pair, (20, 1));
-      (Planet.Venus, Hand.Three_of_a_kind, (20, 2));
-      (Planet.Saturn, Hand.Straight, (30, 3));
-      (Planet.Jupiter, Hand.Flush, (15, 2));
-      (Planet.Earth, Hand.Full_house, (25, 2));
-      (Planet.Mars, Hand.Four_of_a_kind, (30, 3));
-      (Planet.Neptune, Hand.Straight_flush, (40, 4));
-      (Planet.Neptune, Hand.Royal_flush, (40, 4));
+      Planet.Pluto, Hand.High_card, (10, 1);
+      Planet.Mercury, Hand.Pair, (15, 1);
+      Planet.Uranus, Hand.Two_pair, (20, 1);
+      Planet.Venus, Hand.Three_of_a_kind, (20, 2);
+      Planet.Saturn, Hand.Straight, (30, 3);
+      Planet.Jupiter, Hand.Flush, (15, 2);
+      Planet.Earth, Hand.Full_house, (25, 2);
+      Planet.Mars, Hand.Four_of_a_kind, (30, 3);
+      Planet.Neptune, Hand.Straight_flush, (40, 4);
+      Planet.Neptune, Hand.Royal_flush, (40, 4);
     ]
   in
   List.iter
     (fun (planet, hand, (chips, mult)) ->
-      assert (
-        HandScoring.score planet hand
-        = [ Effect.AddChips chips; Effect.AddMult mult ]))
+       assert (
+         HandScoring.score planet hand = [Effect.AddChips chips; Effect.AddMult mult]))
     cases;
   assert (HandScoring.score Planet.Pluto Hand.Pair = []);
   assert (HandScoring.score Planet.Mercury Hand.High_card = []);
@@ -40,4 +39,6 @@ let () =
   assert (original.level = 1);
   assert (original.scoring_effect = Effect.create ~chips:40 ~mult:4);
   assert (
-    EffectScoring.apply (Effect.MultMult 3) (Effect.create ~chips:40 ~mult:4) = Effect.create ~chips:40 ~mult:12)
+    EffectScoring.apply (Effect.MultMult 3) (Effect.create ~chips:40 ~mult:4)
+    = Effect.create ~chips:40 ~mult:12)
+;;

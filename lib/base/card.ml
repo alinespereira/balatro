@@ -1,4 +1,8 @@
-type suit = Clubs | Diamonds | Hearts | Spades
+type suit =
+  | Clubs
+  | Diamonds
+  | Hearts
+  | Spades
 [@@deriving show, eq, enum, ord]
 
 type rank =
@@ -17,7 +21,11 @@ type rank =
   | Ace
 [@@deriving show, eq, enum, ord]
 
-type t = { suit : suit; rank : rank; decorations : Decoration.t }
+type t = {
+  suit: suit;
+  rank: rank;
+  decorations: Decoration.t;
+}
 
 let create suit rank = { suit; rank; decorations = Decoration.no_decorations }
 let suit { suit; rank } = suit

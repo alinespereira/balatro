@@ -14,5 +14,8 @@ type t =
   | Flush_five
 [@@deriving show, eq, enum, ord]
 
-type record = { hand : t; level : int; scoring_effect : Effect.t }
-
+type record = {
+  hand: t;
+  level: int;
+  scoring_effect: Effect.t;
+}

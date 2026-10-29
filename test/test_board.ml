@@ -14,8 +14,8 @@ let test_board color =
   let same_card a b = Card.suit a = Card.suit b && Card.rank a = Card.rank b in
   List.iter
     (fun card ->
-      let occurrences = List.filter (same_card card) (drawn @ remaining) in
-      assert (List.length occurrences = 1))
+       let occurrences = List.filter (same_card card) (drawn @ remaining) in
+       assert (List.length occurrences = 1))
     original_cards;
   (* Filling an already full draw must not consume more cards. *)
   let refilled = Board.fill_draw filled in
@@ -24,5 +24,6 @@ let test_board color =
   (* The original board remains unchanged. *)
   assert (Board.draw board = []);
   assert (Deck.cards (Board.deck board) = original_cards)
+;;
 
-let () = List.iter test_board [ Deck.Red; Deck.Blue; Deck.Green ]
+let () = List.iter test_board [Deck.Red; Deck.Blue; Deck.Green]

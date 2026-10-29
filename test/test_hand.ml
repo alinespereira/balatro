@@ -10,12 +10,13 @@ let () =
   let check expected ranks =
     assert (Scoring.Hand.is_full_house (cards ranks) = expected)
   in
-  check true [ first; second; first; second; first ];
-  check true [ second; first; first; second; first ];
-  check false [ first; first; first; first; second ];
-  check false [ first; first; first; first; first ];
-  check false [ first; first; second; second; third ];
-  check false [ first; first; first; second; third ];
+  check true [first; second; first; second; first];
+  check true [second; first; first; second; first];
+  check false [first; first; first; first; second];
+  check false [first; first; first; first; first];
+  check false [first; first; second; second; third];
+  check false [first; first; first; second; third];
   check false [];
-  check false [ first; first; second; second ];
-  check false [ first; first; first; second; second; second ]
+  check false [first; first; second; second];
+  check false [first; first; first; second; second; second]
+;;

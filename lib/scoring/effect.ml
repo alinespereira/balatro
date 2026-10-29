@@ -5,3 +5,4 @@ let apply change eff =
   | AddChips n -> { eff with chips = eff.chips + n }
   | AddMult n -> { eff with mult = eff.mult + n }
   | MultMult n -> { eff with mult = eff.mult * n }
+;;
