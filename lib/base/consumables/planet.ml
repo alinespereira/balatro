@@ -8,4 +8,4 @@ type t =
   | Earth
   | Mars
   | Neptune
-[@@deriving show, eq, enum, ord]
+[@@deriving show, eq, ord]

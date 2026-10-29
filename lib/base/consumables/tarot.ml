@@ -1,24 +1,24 @@
 type t =
-  | The_fool
-  | The_magician
-  | The_high_priestess
-  | The_empress
-  | The_emperor
-  | The_hierophant
-  | The_lovers
-  | The_chariot
+  | TheFool
+  | TheMagician
+  | TheHighPriestess
+  | TheEmpress
+  | TheEmperor
+  | TheHierophant
+  | TheLovers
+  | TheChariot
   | Justice
-  | The_hermit
-  | The_wheel_of_fortune
+  | TheHermit
+  | TheWheelOfFortune
   | Strength
-  | The_hanged_man
+  | TheHangedMan
   | Death
   | Temperance
-  | The_devil
-  | The_tower
-  | The_star
-  | The_moon
-  | The_sun
+  | TheDevil
+  | TheTower
+  | TheStar
+  | TheMoon
+  | TheSun
   | Judgement
-  | The_world
-[@@deriving show, eq, enum, ord]
+  | TheWorld
+[@@deriving show, eq, ord]

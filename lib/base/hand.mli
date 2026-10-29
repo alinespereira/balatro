@@ -1,18 +1,18 @@
 type t =
-  | High_card
+  | HighCard
   | Pair
-  | Two_pair
-  | Three_of_a_kind
+  | TwoPair
+  | ThreeOfAKind
   | Straight
   | Flush
-  | Full_house
-  | Four_of_a_kind
-  | Straight_flush
-  | Royal_flush
-  | Five_of_a_kind
-  | Flush_house
-  | Flush_five
-[@@deriving show, eq, enum, ord]
+  | FullHouse
+  | FourOfAKind
+  | StraightFlush
+  | RoyalFlush
+  | FiveOfAKind
+  | FlushHouse
+  | FlushFive
+[@@deriving show, eq, ord]
 
 type record = {
   hand: t;

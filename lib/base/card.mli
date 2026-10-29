@@ -1,10 +1,33 @@
-type t
-type suit [@@deriving show, eq, enum, ord]
-type rank [@@deriving show, eq, enum, ord]
+type suit =
+  | Clubs
+  | Diamonds
+  | Hearts
+  | Spades
+[@@deriving show, eq, ord]
+
+type rank =
+  | Two
+  | Three
+  | Four
+  | Five
+  | Six
+  | Seven
+  | Eight
+  | Nine
+  | Ten
+  | Jack
+  | Queen
+  | King
+  | Ace
+[@@deriving show, eq, ord]
+
+type t = {
+  suit: suit;
+  rank: rank;
+  decoration: Decoration.t;
+}
 
 val create : suit -> rank -> t
-val suit : t -> suit
-val rank : t -> rank
 val all_suits : suit list
 val all_ranks : rank list
 

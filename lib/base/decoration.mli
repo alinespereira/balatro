@@ -1,6 +1,29 @@
-type t
-type enhancement
-type edition
-type seal
+type enhancement =
+  | Bonus
+  | Mult
+  | Wild
+  | Glass
+  | Steel
+  | Stone
+  | Gold
+  | Lucky
 
-val no_decorations : t
+type edition =
+  | Foil
+  | Holographic
+  | Polychrome
+  | Negative
+
+type seal =
+  | Red
+  | Blue
+  | Gold
+  | Purple
+
+type t = {
+  enhancement: enhancement option;
+  edition: edition option;
+  seal: seal option;
+}
+
+val none : t

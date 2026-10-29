@@ -3,7 +3,7 @@ type suit =
   | Diamonds
   | Hearts
   | Spades
-[@@deriving show, eq, enum, ord]
+[@@deriving show, eq, ord]
 
 type rank =
   | Two
@@ -19,32 +19,29 @@ type rank =
   | Queen
   | King
   | Ace
-[@@deriving show, eq, enum, ord]
+[@@deriving show, eq, ord]
 
 type t = {
   suit: suit;
   rank: rank;
-  decorations: Decoration.t;
+  decoration: Decoration.t;
 }
 
-let create suit rank = { suit; rank; decorations = Decoration.no_decorations }
-let suit { suit; rank } = suit
-let rank { suit; rank } = rank
-let all_suits = Util.list_of_enum min_suit max_suit suit_of_enum
-let all_ranks = Util.list_of_enum min_rank max_rank rank_of_enum
+let create suit rank = { suit; rank; decoration = Decoration.none }
+let all_suits = [Clubs; Diamonds; Hearts; Spades]
 
-module RankPair = struct
-  type t = rank
+let all_ranks =
+  [Two; Three; Four; Five; Six; Seven; Eight; Nine; Ten; Jack; Queen; King; Ace]
+;;
 
-  let compare = compare_rank
-end
+module RankMap = Map.Make (struct
+    type t = rank
 
-module RankMap = Map.Make (RankPair)
+    let compare = compare_rank
+  end)
 
-module SuitPair = struct
-  type t = suit
+module SuitMap = Map.Make (struct
+    type t = suit
 
-  let compare = compare_suit
-end
-
-module SuitMap = Map.Make (SuitPair)
+    let compare = compare_suit
+  end)

@@ -10,11 +10,11 @@ type t =
   | Ectoplasm
   | Immolate
   | Ankh
-  | Deja_vu
+  | DejaVu
   | Hex
   | Trance
   | Medium
   | Cryptid
-  | The_soul
-  | Black_hole
-[@@deriving show, eq, enum, ord]
+  | TheSoul
+  | BlackHole
+[@@deriving show, eq, ord]

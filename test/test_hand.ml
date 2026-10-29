@@ -2,21 +2,17 @@ open Balatro
 open Balatro.Base
 
 let () =
-  let suit = List.hd Card.all_suits in
-  let first = List.nth Card.all_ranks 0 in
-  let second = List.nth Card.all_ranks 1 in
-  let third = List.nth Card.all_ranks 2 in
-  let cards ranks = List.map (Card.create suit) ranks in
+  let cards ranks = List.map (Card.create Card.Clubs) ranks in
   let check expected ranks =
     assert (Scoring.Hand.is_full_house (cards ranks) = expected)
   in
-  check true [first; second; first; second; first];
-  check true [second; first; first; second; first];
-  check false [first; first; first; first; second];
-  check false [first; first; first; first; first];
-  check false [first; first; second; second; third];
-  check false [first; first; first; second; third];
+  check true Card.[Two; Three; Two; Three; Two];
+  check true Card.[Three; Two; Two; Three; Two];
+  check false Card.[Two; Two; Two; Two; Three];
+  check false Card.[Two; Two; Two; Two; Two];
+  check false Card.[Two; Two; Three; Three; Four];
+  check false Card.[Two; Two; Two; Three; Four];
   check false [];
-  check false [first; first; second; second];
-  check false [first; first; first; second; second; second]
+  check false Card.[Two; Two; Three; Three];
+  check false Card.[Two; Two; Two; Three; Three; Three]
 ;;
