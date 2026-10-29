@@ -93,7 +93,11 @@ let is_five_in_sequence cards =
   let ranks ~ace_value =
     cards
     |> List.map (fun (card : Card.t) -> Card.rank_to_enum card.rank)
-    |> List.map (fun value -> if value = ace then ace_value else value)
+    |> List.map (fun value ->
+      if value = ace then
+        ace_value
+      else
+        value)
     |> List.sort Int.compare
   in
   List.length cards = 5
