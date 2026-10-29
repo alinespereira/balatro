@@ -1,7 +1,5 @@
 open Balatro
-open Balatro.Base
 open Balatro.Consumables
-module HandScoring = Balatro.Scoring.Hand
 
 let () =
   let cases =
@@ -23,21 +21,29 @@ let () =
   in
   List.iter
     (fun (planet, hand, (chips, mult)) ->
-       assert (HandScoring.score planet hand = [Score.AddChips chips; Score.AddMult mult]))
+       assert (Planet.equal (Planet.of_hand hand) planet);
+       assert (Planet.bonus planet = [Score.AddChips chips; Score.AddMult mult]))
     cases;
-  assert (HandScoring.score Planet.Pluto Poker_hand.Pair = []);
-  assert (HandScoring.score Planet.Mercury Poker_hand.HighCard = []);
-  assert (HandScoring.score Planet.Neptune Poker_hand.FlushFive = []);
-  let original = List.assoc Poker_hand.FullHouse HandScoring.base_hands in
-  let upgraded = HandScoring.consume Planet.Earth original in
-  assert (upgraded.level = 2);
-  assert (Score.equal upgraded.scoring_effect (Score.create ~chips:65 ~mult:6.));
-  let upgraded_again = HandScoring.consume Planet.Earth upgraded in
-  assert (upgraded_again.level = 3);
-  assert (Score.equal upgraded_again.scoring_effect (Score.create ~chips:90 ~mult:8.));
-  assert (HandScoring.consume Planet.Pluto original = original);
-  assert (original.level = 1);
-  assert (Score.equal original.scoring_effect (Score.create ~chips:40 ~mult:4.));
+  let levels = Hand_levels.initial in
+  let full_house = Hand_levels.get Poker_hand.FullHouse levels in
+  assert (full_house.level = 1);
+  assert (Score.equal full_house.score (Score.create ~chips:40 ~mult:4.));
+  let levels = Hand_levels.use_planet Planet.Earth levels in
+  let full_house = Hand_levels.get Poker_hand.FullHouse levels in
+  assert (full_house.level = 2);
+  assert (Score.equal full_house.score (Score.create ~chips:65 ~mult:6.));
+  let levels = Hand_levels.use_planet Planet.Earth levels in
+  let full_house = Hand_levels.get Poker_hand.FullHouse levels in
+  assert (full_house.level = 3);
+  assert (Score.equal full_house.score (Score.create ~chips:90 ~mult:8.));
+  (* A planet only levels up its own hands. *)
+  assert ((Hand_levels.get Poker_hand.Pair levels).level = 1);
+  (* Neptune levels up straight flush and royal flush together. *)
+  let levels = Hand_levels.use_planet Planet.Neptune levels in
+  assert ((Hand_levels.get Poker_hand.StraightFlush levels).level = 2);
+  assert ((Hand_levels.get Poker_hand.RoyalFlush levels).level = 2);
+  (* The initial levels are not changed. *)
+  assert ((Hand_levels.get Poker_hand.FullHouse Hand_levels.initial).level = 1);
   assert (
     Score.equal
       (Score.apply (Score.TimesMult 1.5) (Score.create ~chips:40 ~mult:4.))
