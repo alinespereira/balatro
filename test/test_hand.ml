@@ -1,7 +1,7 @@
 open Balatro
 
 (* A card is written as its rank followed by its suit, so "TH" is the ten of hearts and
-   "AS" the ace of spades. A hand is cards separated by spaces. *)
+   "AS" the ace of spadesPoker_hands cards separated by spaces. *)
 
 let rank_of_char = function
   | '2' -> Card.Two

@@ -56,37 +56,103 @@ type error = InvalidCardCount of int
 
 let group_by_rank = Util.groups ~key:(fun (card : Card.t) -> card.rank)
 let group_by_suit = Util.groups ~key:(fun (card : Card.t) -> card.suit)
+let all_same_rank cards = group_by_rank cards |> List.length = 1
+let all_same_suit cards = group_by_suit cards |> List.length = 1
 
 let rank_counts cards =
   let groups = group_by_rank cards in
   let _, group = List.split groups in
-  group |> List.map List.length |> List.sort Int.compare
+  group |> List.map List.length |> List.sort (Fun.flip Int.compare)
 ;;
 
 let suit_counts cards =
   let groups = group_by_suit cards in
   let _, group = List.split groups in
-  group |> List.map List.length |> List.sort Int.compare
+  group |> List.map List.length |> List.sort (Fun.flip Int.compare)
+;;
+
+let count_groups ~size ~fn cards =
+  cards |> fn |> List.filter (fun count -> count = size) |> List.length
+;;
+
+let count_rank_pairs cards = count_groups ~size:2 ~fn:rank_counts cards
+let count_rank_triplets cards = count_groups ~size:3 ~fn:rank_counts cards
+let count_rank_quadruplets cards = count_groups ~size:4 ~fn:rank_counts cards
+let count_suit_pairs cards = count_groups ~size:2 ~fn:suit_counts cards
+let count_suit_triplets cards = count_groups ~size:3 ~fn:suit_counts cards
+
+let is_in_sequence cards =
+  let eval ~enum_transform =
+    let ranks =
+      List.map (fun (card : Card.t) -> Card.rank_to_enum card.rank) cards
+      |> List.map enum_transform
+      |> List.sort Int.compare
+    in
+    let init = ranks |> List.rev |> List.tl |> List.rev in
+    let tail = List.tl ranks in
+    List.combine tail init
+    |> List.map (fun (snd, fst) -> snd - fst)
+    |> List.for_all (fun diff -> diff = 1)
+  in
+  let mod_transform value = value mod List.length Card.all_of_rank in
+  eval ~enum_transform:Fun.id || eval ~enum_transform:mod_transform
 ;;
 
 let evaluate _ = failwith "Not implemented"
-let is_high_card cards = not (List.is_empty cards)
-let is_pair cards = rank_counts cards = [1; 1; 1; 2]
-let is_two_pair cards = rank_counts cards = [1; 2; 2]
-let is_three_of_a_kind cards = rank_counts cards = [1; 1; 2]
-let is_straight _ = failwith "Not implemented"
-let is_flush _ = failwith "Not implemented"
-let is_full_house cards = rank_counts cards = [2; 3]
-let is_four_of_a_kind _ = failwith "Not implemented"
-let is_straight_flush _ = failwith "Not implemented"
-let is_royal_flush _ = failwith "Not implemented"
-let is_five_of_a_kind _ = failwith "Not implemented"
-let is_flush_house _ = failwith "Not implemented"
-let is_flush_five _ = failwith "Not implemented"
+let is_three_of_a_kind cards = count_rank_triplets cards = 1 && count_rank_pairs cards = 0
 
-let get_high_card cards =
+let is_flush_five cards =
+  List.length cards = 5 && all_same_suit cards && all_same_rank cards
+;;
+
+let is_flush_house cards =
+  count_rank_pairs cards = 1 && count_rank_triplets cards = 1 && all_same_suit cards
+;;
+
+let is_five_of_a_kind cards =
+  List.length cards = 5 && all_same_rank cards && not (all_same_suit cards)
+;;
+
+let is_royal_flush _ = failwith "Not implemented"
+
+let is_straight_flush cards =
+  List.length cards = 5 && all_same_suit cards && is_in_sequence cards
+;;
+
+let is_four_of_a_kind cards = count_rank_quadruplets cards = 1
+
+let is_full_house cards =
+  count_rank_pairs cards = 1 && count_rank_triplets cards = 1 && not (all_same_suit cards)
+;;
+
+let is_flush cards =
+  List.length cards = 5
+  && all_same_suit cards
+  && (not (is_in_sequence cards))
+  && (not (is_flush_house cards))
+  && not (is_flush_five cards)
+;;
+
+let is_straight cards =
+  List.length cards = 5 && (not (all_same_suit cards)) && is_in_sequence cards
+;;
+
+let is_two_pair cards = count_rank_pairs cards = 2 && not (all_same_suit cards)
+
+let is_pair cards =
+  count_rank_pairs cards = 1 && count_rank_triplets cards = 0 && not (is_flush cards)
+;;
+
+let is_high_card cards =
+  (List.for_all (fun count -> count = 1) (rank_counts cards)
+   && ((not (all_same_suit cards)) || List.length cards < 5)
+   && ((not (is_in_sequence cards)) || List.length cards < 5))
+  || List.length cards = 1
+;;
+
+let get_highest_card cards =
   cards
   |> List.sort (fun (card_1 : Card.t) (card_2 : Card.t) ->
-    Card.compare_suit card_2.suit card_1.suit)
+    Card.compare_rank card_2.rank card_1.rank)
   |> List.hd
 ;;
