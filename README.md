@@ -77,7 +77,7 @@ test/               Testes
 Cada módulo reúne um conceito do jogo: o tipo e as funções que trabalham com ele. O `.mli` decide o que fica visível:
 
 - tipos sem regra a proteger (naipes, valores, planetas, `Score.t`) expõem os construtores;
-- tipos com uma regra a proteger (`Deck.t`, `Hand_levels.t`, `Board.t`) são abstratos;
-- `private` permite ler um valor de fora sem poder construí-lo (`Hand_levels.entry`).
+- tipos com uma regra a proteger (`Deck.t`, `Hand.Levels.t`, `Board.t`) são abstratos;
+- `private` permite ler um valor de fora sem poder construí-lo (`Hand.Levels.entry`).
 
-Construtores usam PascalCase (`HighCard`, `TheFool`). Módulos que vêm de arquivos seguem o nome do arquivo (`poker_hand.ml` vira `Poker_hand`).
+Construtores usam PascalCase (`HighCard`, `TheFool`). Módulos que vêm de arquivos seguem o nome do arquivo (`poker_hand.ml` vira `Poker.Hand`).

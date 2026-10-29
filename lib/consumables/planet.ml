@@ -13,7 +13,7 @@ type t =
   | Eris
 [@@deriving show, eq, ord]
 
-let of_hand : Poker_hand.t -> t = function
+let of_hand : Poker.Hand.t -> t = function
   | HighCard -> Pluto
   | Pair -> Mercury
   | TwoPair -> Uranus
@@ -23,7 +23,7 @@ let of_hand : Poker_hand.t -> t = function
   | FullHouse -> Earth
   | FourOfAKind -> Mars
   | StraightFlush
-  | RoyalFlush ->
+   |RoyalFlush ->
     Neptune
   | FiveOfAKind -> PlanetX
   | FlushHouse -> Ceres

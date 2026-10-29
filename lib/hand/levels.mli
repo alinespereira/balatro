@@ -14,7 +14,7 @@ type t
 (** Every hand at level 1 with its base score. *)
 val initial : t
 
-val get : Poker_hand.t -> t -> entry
+val get : Poker.Hand.t -> t -> entry
 
 (** Levels up every hand whose planet is the given one. *)
 val use_planet : Consumables.Planet.t -> t -> t

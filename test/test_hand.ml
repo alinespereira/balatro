@@ -2,9 +2,7 @@ open Balatro
 
 let () =
   let cards ranks = List.map (Card.create Card.Clubs) ranks in
-  let check expected ranks =
-    assert (Poker_hand.is_full_house (cards ranks) = expected)
-  in
+  let check expected ranks = assert (Poker.Hand.is_full_house (cards ranks) = expected) in
   check true Card.[Two; Three; Two; Three; Two];
   check true Card.[Three; Two; Two; Three; Two];
   check false Card.[Two; Two; Two; Two; Three];

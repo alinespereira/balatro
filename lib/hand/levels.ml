@@ -1,4 +1,4 @@
-module HandMap = Map.Make (Poker_hand)
+module HandMap = Map.Make (Poker.Hand)
 
 type entry = {
   level: int;
@@ -8,8 +8,8 @@ type entry = {
 type t = entry HandMap.t
 
 let initial =
-  Poker_hand.all
-  |> List.map (fun hand -> hand, { level = 1; score = Poker_hand.base_score hand })
+  Poker.Hand.all
+  |> List.map (fun hand -> hand, { level = 1; score = Poker.Hand.base_score hand })
   |> List.to_seq
   |> HandMap.of_seq
 ;;
