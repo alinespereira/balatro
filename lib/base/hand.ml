@@ -17,5 +17,5 @@ type t =
 type record = {
   hand: t;
   level: int;
-  scoring_effect: Effect.t;
+  scoring_effect: Score.t;
 }

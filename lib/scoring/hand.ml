@@ -12,19 +12,19 @@ type error = InvalidCardCount of int
 
 let base_scores =
   HandMap.empty
-  |> HandMap.add FlushFive (Base.Effect.create ~chips:160 ~mult:16)
-  |> HandMap.add FlushHouse (Base.Effect.create ~chips:140 ~mult:14)
-  |> HandMap.add FiveOfAKind (Base.Effect.create ~chips:120 ~mult:12)
-  |> HandMap.add RoyalFlush (Base.Effect.create ~chips:100 ~mult:8)
-  |> HandMap.add StraightFlush (Base.Effect.create ~chips:100 ~mult:8)
-  |> HandMap.add FourOfAKind (Base.Effect.create ~chips:60 ~mult:7)
-  |> HandMap.add FullHouse (Base.Effect.create ~chips:40 ~mult:4)
-  |> HandMap.add Flush (Base.Effect.create ~chips:35 ~mult:4)
-  |> HandMap.add Straight (Base.Effect.create ~chips:30 ~mult:4)
-  |> HandMap.add ThreeOfAKind (Base.Effect.create ~chips:30 ~mult:3)
-  |> HandMap.add TwoPair (Base.Effect.create ~chips:20 ~mult:2)
-  |> HandMap.add Pair (Base.Effect.create ~chips:10 ~mult:2)
-  |> HandMap.add HighCard (Base.Effect.create ~chips:5 ~mult:1)
+  |> HandMap.add FlushFive (Score.create ~chips:160 ~mult:16.)
+  |> HandMap.add FlushHouse (Score.create ~chips:140 ~mult:14.)
+  |> HandMap.add FiveOfAKind (Score.create ~chips:120 ~mult:12.)
+  |> HandMap.add RoyalFlush (Score.create ~chips:100 ~mult:8.)
+  |> HandMap.add StraightFlush (Score.create ~chips:100 ~mult:8.)
+  |> HandMap.add FourOfAKind (Score.create ~chips:60 ~mult:7.)
+  |> HandMap.add FullHouse (Score.create ~chips:40 ~mult:4.)
+  |> HandMap.add Flush (Score.create ~chips:35 ~mult:4.)
+  |> HandMap.add Straight (Score.create ~chips:30 ~mult:4.)
+  |> HandMap.add ThreeOfAKind (Score.create ~chips:30 ~mult:3.)
+  |> HandMap.add TwoPair (Score.create ~chips:20 ~mult:2.)
+  |> HandMap.add Pair (Score.create ~chips:10 ~mult:2.)
+  |> HandMap.add HighCard (Score.create ~chips:5 ~mult:1.)
 ;;
 
 let base_hands =
@@ -57,12 +57,7 @@ let consume planet (hand : Base.Hand.record) =
   match score planet hand.hand with
   | [] -> hand
   | changes ->
-    let scoring_effect =
-      List.fold_left
-        (fun current change -> Effect.apply change current)
-        hand.scoring_effect
-        changes
-    in
+    let scoring_effect = Score.apply_all changes hand.scoring_effect in
     { hand with level = hand.level + 1; scoring_effect }
 ;;
 
