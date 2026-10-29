@@ -29,6 +29,6 @@ type-decl = sparse
 wrap-fun-args = false
 
 if-then-else = k-r
-indicate-nested-or-patterns = space
+indicate-nested-or-patterns = unsafe-no
 
 dock-collection-brackets = true
