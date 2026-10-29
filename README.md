@@ -80,4 +80,4 @@ Cada módulo reúne um conceito do jogo: o tipo e as funções que trabalham com
 - tipos com uma regra a proteger (`Deck.t`, `Hand.Levels.t`, `Board.t`) são abstratos;
 - `private` permite ler um valor de fora sem poder construí-lo (`Hand.Levels.entry`).
 
-Construtores usam PascalCase (`HighCard`, `TheFool`). Módulos que vêm de arquivos seguem o nome do arquivo (`poker_hand.ml` vira `Poker.Hand`).
+Construtores usam PascalCase (`HighCard`, `TheFool`). Módulos que vêm de arquivos seguem o nome do arquivo (`poker/hand.ml` vira `Poker.Hand`).
