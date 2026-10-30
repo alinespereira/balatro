@@ -25,10 +25,9 @@ type status =
 [@@deriving show, eq]
 
 type error =
-  | BlindError of Blind.error
-      (** The current blind refused the play or the discard. *)
-  | BlindNotOver  (** [next_blind] was called before the current blind was beaten. *)
-  | RunOver  (** The run is already won or lost. *)
+  | BlindError of Blind.error (** The current blind refused the play or the discard. *)
+  | BlindNotOver (** [next_blind] was called before the current blind was beaten. *)
+  | RunOver (** The run is already won or lost. *)
 [@@deriving show]
 
 (** The last ante: beating its boss blind wins the run. *)
