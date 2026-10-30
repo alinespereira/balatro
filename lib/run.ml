@@ -89,4 +89,7 @@ let discard indices run =
 ;;
 
 let next_blind _rng _run = failwith "TODO: Run.next_blind"
-let use_planet _planet _run = failwith "TODO: Run.use_planet"
+
+let use_planet planet run =
+  { run with levels = run |> levels |> Poker.Levels.use_planet planet }
+;;
