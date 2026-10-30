@@ -87,7 +87,27 @@ let discard indices run =
   Ok { run with blind = the_blind }
 ;;
 
-let next_blind rng run = failwith "TODO: Run.next_blind"
+let advance ante = function
+  | Small -> Some (ante, Big)
+  | Big -> Some (ante, Boss)
+  | Boss when ante < final_ante -> Some (ante + 1, Small)
+  | Boss -> None
+;;
+
+let next_blind rng run =
+  let { ante = the_ante; stage = the_stage; blind = the_blind; _ } = run in
+  match Blind.status the_blind, advance the_ante the_stage with
+  | InProgress, _ -> Error BlindNotOver
+  | Lost, _
+  | Won, None ->
+    Error RunOver
+  | Won, Some (new_ante, new_stage) ->
+    let the_board = Blind.board the_blind in
+    let new_target = target new_stage ~ante:new_ante in
+    let new_board = Board.reset rng the_board in
+    let new_blind = Blind.create ~target:new_target new_board in
+    Ok { run with ante = new_ante; stage = new_stage; blind = new_blind }
+;;
 
 let use_planet planet run =
   { run with levels = run |> levels |> Poker.Levels.use_planet planet }

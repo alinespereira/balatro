@@ -4,7 +4,7 @@
     the boss blind of [final_ante] wins the run; losing any blind loses it. Hand levels
     carry over from one blind to the next, but every blind starts with a new board and
     a freshly shuffled deck. *)
-
+    
 (** Which of the three blinds of an ante is being played. *)
 type stage =
   | Small
