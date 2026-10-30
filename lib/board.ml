@@ -1,47 +1,90 @@
-type 'a interval = {
-  min: 'a;
-  max: 'a;
-}
+type error =
+  | NoCards
+  | TooManyCards of int
+  | InvalidIndex of int
+  | DuplicateIndex of int
+  | InvalidPlay of Poker.Hand.error
+[@@deriving show]
 
 type t = {
   deck: Deck.t;
-  draw: Card.t list;
+  hand: Card.t list;
+  discarded: Card.t list;
   jokers: Joker.t list;
   consumables: Consumables.Consumable.t list;
-  draw_size: int;
-  max_jokers: int;
-  max_consumables: int;
-  hand_size: int interval;
+  hand_size: int;
+  joker_slots: int;
+  consumable_slots: int;
 }
 
-let deck { deck } = deck
-let draw { draw } = draw
+let default_hand_size = 8
+let default_joker_slots = 5
+let default_consumable_slots = 2
+let max_selected = 5
+let ( let* ) = Result.bind
+let deck { deck; _ } = deck
+let hand { hand; _ } = hand
+let discarded { discarded; _ } = discarded
 
-let create color =
-  let deck = Deck.create color in
+let create rng color =
+  let deck = Deck.create color |> Deck.shuffle rng in
   {
     deck;
-    draw = [];
+    hand = [];
+    discarded = [];
     jokers = [];
     consumables = [];
-    draw_size = 1;
-    max_jokers = 5;
-    max_consumables = 2;
-    hand_size = { min = 1; max = 5 };
+    hand_size = default_hand_size;
+    joker_slots = default_joker_slots;
+    consumable_slots = default_consumable_slots;
   }
 ;;
 
-let fill_draw board =
-  let rec loop board size =
-    if size <= 0 then
-      board
-    else (
-      let sample, rest = board |> deck |> Deck.cards |> Util.draw in
-      let board =
-        { board with deck = Deck.set_cards rest board.deck; draw = sample :: board.draw }
-      in
-      loop board (size - 1)
-    )
+(* The deck is shuffled once in [create], so drawing is just taking cards from the top.
+   [Util.split_at] returns fewer cards when the deck runs out, so an empty deck is not
+   an error: the hand simply stays smaller. *)
+let refill board =
+  let missing = board.hand_size - List.length board.hand in
+  let drawn, rest = Util.split_at missing (Deck.cards board.deck) in
+  { board with deck = Deck.set_cards rest board.deck; hand = board.hand @ drawn }
+;;
+
+let validate_indices size indices =
+  let rec loop seen = function
+    | [] -> Ok ()
+    | idx :: rest ->
+      if idx < 0 || idx >= size then
+        Error (InvalidIndex idx)
+      else if List.mem idx seen then
+        Error (DuplicateIndex idx)
+      else
+        loop (idx :: seen) rest
   in
-  loop board (board.draw_size - List.length board.draw)
+  match List.length indices with
+  | 0 -> Error NoCards
+  | count when count > max_selected -> Error (TooManyCards count)
+  | _ -> loop [] indices
+;;
+
+(* Splits the hand into the selected cards and the ones that stay, keeping the order
+   they have in the hand. *)
+let select indices hand =
+  let* () = validate_indices (List.length hand) indices in
+  let chosen, kept =
+    hand
+    |> List.mapi (fun pos card -> pos, card)
+    |> List.partition (fun (pos, _) -> List.mem pos indices)
+  in
+  Ok (List.map snd chosen, List.map snd kept)
+;;
+
+let play indices board =
+  let* selected, kept = select indices board.hand in
+  let* play = Play.make selected |> Result.map_error (fun e -> InvalidPlay e) in
+  Ok (play, { board with hand = kept; discarded = selected @ board.discarded })
+;;
+
+let discard indices board =
+  let* selected, kept = select indices board.hand in
+  Ok { board with hand = kept; discarded = selected @ board.discarded }
 ;;

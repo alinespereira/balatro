@@ -13,13 +13,20 @@ let split_at n lst =
   loop n lst []
 ;;
 
-let draw lst =
+let draw rng lst =
   let n = List.length lst in
-  let pos = Random.int n in
+  let pos = Random.State.int rng n in
   let head, tail = split_at pos lst in
   match tail with
   | [] -> raise InvalidSamplePosition
   | sample :: rest -> sample, head @ rest
+;;
+
+let rec shuffle rng = function
+  | [] -> []
+  | lst ->
+    let x, rest = draw rng lst in
+    x :: shuffle rng rest
 ;;
 
 let groups (type k) ~(key : 'a -> k) (xs : 'a list) =
