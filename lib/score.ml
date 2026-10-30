@@ -23,4 +23,4 @@ let apply_all changes score =
   List.fold_left (fun acc change -> apply change acc) score changes
 ;;
 
-let total { chips; mult } = Float.of_int chips *. mult
+let total { chips; mult } = Float.of_int chips *. mult |> Int.of_float
