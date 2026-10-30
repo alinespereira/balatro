@@ -7,35 +7,28 @@ let fresh_blind ?plays ?discards ~target color =
   Blind.create ?plays ?discards ~target board
 ;;
 
-let show_error = function
-  | Blind.NoPlaysLeft -> "NoPlaysLeft"
-  | Blind.NoDiscardsLeft -> "NoDiscardsLeft"
-  | Blind.RoundOver -> "RoundOver"
-  | Blind.BoardError e -> "BoardError " ^ Board.show_error e
-;;
-
 let play_ok indices blind =
   match Blind.play levels indices blind with
   | Ok result -> result
-  | Error e -> failwith (show_error e)
+  | Error e -> failwith (Blind.show_error e)
 ;;
 
 let discard_ok indices blind =
   match Blind.discard indices blind with
   | Ok blind -> blind
-  | Error e -> failwith (show_error e)
+  | Error e -> failwith (Blind.show_error e)
 ;;
 
 let expect_play_error indices blind expected =
   match Blind.play levels indices blind with
   | Error e -> assert (e = expected)
-  | Ok _ -> failwith ("expected " ^ show_error expected)
+  | Ok _ -> failwith ("expected " ^ Blind.show_error expected)
 ;;
 
 let expect_discard_error indices blind expected =
   match Blind.discard indices blind with
   | Error e -> assert (e = expected)
-  | Ok _ -> failwith ("expected " ^ show_error expected)
+  | Ok _ -> failwith ("expected " ^ Blind.show_error expected)
 ;;
 
 let hand_size blind = List.length (Board.hand (Blind.board blind))
@@ -103,8 +96,8 @@ let test_lost color =
   let lost = blind |> play |> play |> play |> play in
   assert (Blind.plays_left lost = 0);
   assert (Blind.status lost = Blind.Lost);
-  expect_play_error [0] lost Blind.RoundOver;
-  expect_discard_error [0] lost Blind.NoPlaysLeft
+  expect_play_error [0] lost Blind.NoPlaysLeft;
+  expect_discard_error [0] lost Blind.RoundOver
 ;;
 
 (* An invalid selection is reported and does not spend a play or a discard. *)
