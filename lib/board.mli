@@ -18,7 +18,6 @@ val max_selected : int
 val create : Random.State.t -> Deck.color -> t
 
 val reset : Random.State.t -> t -> t
-
 val deck : t -> Deck.t
 val hand : t -> Card.t list
 
