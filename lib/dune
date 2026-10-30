@@ -3,7 +3,8 @@
 (library
  (name balatro)
  (libraries)
- (flags (:standard -w +9))
+ (flags
+  (:standard -w +9))
  (preprocess
   (pps
    ppx_deriving.show
