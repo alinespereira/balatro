@@ -141,7 +141,7 @@ let () =
        let actual =
          match Poker.Hand.evaluate (hand cards) with
          | Ok { Poker.Hand.category; _ } -> Some category
-         | Error _ -> None
+         | Error (Poker.Hand.InvalidCardCount _) -> None
        in
        if actual <> expected then (
          let example = describe name cards in

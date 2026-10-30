@@ -50,5 +50,3 @@ let groups (type k) ~(key : 'a -> k) (xs : 'a list) =
   |> M.bindings
   |> List.map (fun (k, ys) -> k, List.rev ys)
 ;;
-
-let not_implemented = failwith "Not implemented"

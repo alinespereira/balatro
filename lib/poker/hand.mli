@@ -29,13 +29,7 @@ type evaluation = {
   scoring_cards: Card.t list;
 }
 
-type error =
-  | InvalidCardCount of int
-  | InvalidIndex of int
-  | DuplicateIndex of int
-  | NoCards
-  | TooManyCards
-[@@deriving show]
+type error = InvalidCardCount of int [@@deriving show]
 
 val evaluate : Card.t list -> (evaluation, error) result
 

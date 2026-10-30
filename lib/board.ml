@@ -1,3 +1,11 @@
+type error =
+  | NoCards
+  | TooManyCards of int
+  | InvalidIndex of int
+  | DuplicateIndex of int
+  | InvalidPlay of Poker.Hand.error
+[@@deriving show]
+
 type t = {
   deck: Deck.t;
   hand: Card.t list;
@@ -9,11 +17,14 @@ type t = {
   consumable_slots: int;
 }
 
+let default_hand_size = 8
+let default_joker_slots = 5
+let default_consumable_slots = 2
+let max_selected = 5
+let ( let* ) = Result.bind
 let deck { deck; _ } = deck
 let hand { hand; _ } = hand
-let hand_size = 1
-let joker_slots = 5
-let consumable_slots = 2
+let discarded { discarded; _ } = discarded
 
 let create rng color =
   let deck = Deck.create color |> Deck.shuffle rng in
@@ -23,67 +34,57 @@ let create rng color =
     discarded = [];
     jokers = [];
     consumables = [];
-    hand_size;
-    joker_slots;
-    consumable_slots;
+    hand_size = default_hand_size;
+    joker_slots = default_joker_slots;
+    consumable_slots = default_consumable_slots;
   }
 ;;
 
-let refill rng board =
-  let rec loop board size =
-    if size <= 0 then
-      board
-    else (
-      let sample, rest = board |> deck |> Deck.cards |> Util.draw rng in
-      let board =
-        { board with deck = Deck.set_cards rest board.deck; hand = sample :: board.hand }
-      in
-      loop board (size - 1)
-    )
-  in
-  loop board (board.hand_size - List.length board.hand)
+(* The deck is shuffled once in [create], so drawing is just taking cards from the top.
+   [Util.split_at] returns fewer cards when the deck runs out, so an empty deck is not
+   an error: the hand simply stays smaller. *)
+let refill board =
+  let missing = board.hand_size - List.length board.hand in
+  let drawn, rest = Util.split_at missing (Deck.cards board.deck) in
+  { board with deck = Deck.set_cards rest board.deck; hand = board.hand @ drawn }
 ;;
 
-let select indices hand =
-  let size = List.length hand in
-  let rec validate seen = function
+let validate_indices size indices =
+  let rec loop seen = function
     | [] -> Ok ()
     | idx :: rest ->
       if idx < 0 || idx >= size then
-        Error (Poker.Hand.InvalidIndex idx)
+        Error (InvalidIndex idx)
       else if List.mem idx seen then
-        Error (Poker.Hand.DuplicateIndex idx)
+        Error (DuplicateIndex idx)
       else
-        validate (idx :: seen) rest
+        loop (idx :: seen) rest
   in
-  match indices with
-  | [] -> Error Poker.Hand.NoCards
-  | _ ->
-    validate [] indices
-    |> Result.map (fun () ->
-      let chosen, kept =
-        hand
-        |> List.mapi (fun pos card -> pos, card)
-        |> List.partition (fun (pos, _) -> List.mem pos indices)
-      in
-      List.map snd chosen, List.map snd kept)
+  match List.length indices with
+  | 0 -> Error NoCards
+  | count when count > max_selected -> Error (TooManyCards count)
+  | _ -> loop [] indices
+;;
+
+(* Splits the hand into the selected cards and the ones that stay, keeping the order
+   they have in the hand. *)
+let select indices hand =
+  let* () = validate_indices (List.length hand) indices in
+  let chosen, kept =
+    hand
+    |> List.mapi (fun pos card -> pos, card)
+    |> List.partition (fun (pos, _) -> List.mem pos indices)
+  in
+  Ok (List.map snd chosen, List.map snd kept)
 ;;
 
 let play indices board =
-  Result.map
-    (fun (selected, kept) ->
-       let new_board =
-         { board with discarded = selected @ board.discarded; hand = kept }
-       in
-       match Play.make selected with
-       | Ok play -> play, new_board
-       | Error e -> Util.not_implemented)
-    (select indices board.hand)
+  let* selected, kept = select indices board.hand in
+  let* play = Play.make selected |> Result.map_error (fun e -> InvalidPlay e) in
+  Ok (play, { board with hand = kept; discarded = selected @ board.discarded })
 ;;
 
 let discard indices board =
-  Result.map
-    (fun (selected, kept) ->
-       { board with discarded = selected @ board.discarded; hand = kept })
-    (select indices board.hand)
+  let* selected, kept = select indices board.hand in
+  Ok { board with hand = kept; discarded = selected @ board.discarded }
 ;;
