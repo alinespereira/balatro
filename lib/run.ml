@@ -25,6 +25,17 @@ type error =
 
 let final_ante = 8
 
+module IntMap = Map.Make (Int)
+
+let ante_base = [300; 800; 2000; 5000; 11000; 20000; 35000; 50000]
+
+let ante_score =
+  ante_base
+  |> List.mapi (fun idx target -> idx + 1, Float.of_int target)
+  |> List.to_seq
+  |> IntMap.of_seq
+;;
+
 (* TODO: base points per ante times a factor per stage. *)
 let target ~ante:_ _stage = failwith "TODO: Run.target"
 
