@@ -9,7 +9,6 @@ type t = {
   stage: stage;
   blind: Blind.t;
   levels: Poker.Levels.t;
-  color: Deck.color;
 }
 
 type status =
@@ -35,7 +34,6 @@ let ante { ante; _ } = ante
 let stage { stage; _ } = stage
 let blind { blind; _ } = blind
 let levels { levels; _ } = levels
-let color { color; _ } = color
 
 (* TODO: derive it from Blind.status, the ante and the stage. *)
 let status _run = failwith "TODO: Run.status"

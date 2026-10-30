@@ -5,8 +5,7 @@
     carry over from one blind to the next, but every blind starts with a new board and
     a freshly shuffled deck. *)
 
-(** Abstract: the current ante and stage, the blind being played, the hand levels and
-    the deck color. *)
+(** Abstract: the current ante and stage, the blind being played and the hand levels. *)
 type t
 
 (** Which of the three blinds of an ante is being played. *)
@@ -44,7 +43,6 @@ val ante : t -> int
 val stage : t -> stage
 val blind : t -> Blind.t
 val levels : t -> Poker.Levels.t
-val color : t -> Deck.color
 val status : t -> status
 
 (** Plays the cards at the given positions of the hand in the current blind, scored
@@ -56,7 +54,7 @@ val discard : int list -> t -> (t, error) result
 
 (** Moves on to the next blind once the current one is beaten: [Small] to [Big],
     [Big] to [Boss], and [Boss] to the [Small] blind of the next ante. The new blind
-    gets a new board, shuffled with the given state. *)
+    gets a new board with a deck of the same color, shuffled with the given state. *)
 val next_blind : Random.State.t -> t -> (t, error) result
 
 (** Levels up the hands of the planet. The new levels count from the next play on. *)

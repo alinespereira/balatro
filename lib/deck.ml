@@ -19,4 +19,5 @@ let create color =
 
 let shuffle rng deck = { deck with cards = Util.shuffle rng deck.cards }
 let cards { cards; _ } = cards
+let color { color; _ } = color
 let set_cards cards deck = { deck with cards }
