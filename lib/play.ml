@@ -1,16 +1,23 @@
-type t = { cards: Card.t list }
+type t = Poker.Hand.evaluation
 
-let rec make play = { cards = play }
+let make = Poker.Hand.evaluate
+let hand (play : t) = play.category
+let scoring_cards (play : t) = play.scoring_cards
 
-let score { cards } =
-  match Poker.Hand.evaluate cards with
-  | Ok evaluation ->
-    let hand_score = Poker.Hand.base_score evaluation.category in
-    evaluation.scoring_cards
-    |> List.map (fun (card : Card.t) -> Card.rank_to_enum card.rank)
-    |> List.map (fun value -> min 11 value)
-    |> List.map (fun value -> Score.AddChips value)
-    |> List.fold_left (fun acc value -> Score.apply value acc) hand_score
-    |> Score.total
-  | Error err -> 0
+let card_chips (card : Card.t) =
+  match card.rank with
+  | Card.Jack
+  | Card.Queen
+  | Card.King ->
+    10
+  | Card.Ace -> 11
+  | rank -> Card.rank_to_enum rank
+;;
+
+let score levels play =
+  let base = (Poker.Levels.get (hand play) levels).score in
+  let changes =
+    scoring_cards play |> List.map (fun card -> Score.AddChips (card_chips card))
+  in
+  Score.apply_all changes base
 ;;
