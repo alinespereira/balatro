@@ -1,0 +1,29 @@
+(** Uma rodada: bater [target] pontos antes de acabarem as jogadas. *)
+
+(** Abstrato: board + meta + jogadas/descartes restantes + pontos. *)
+type t
+
+type status =
+  | InProgress
+  | Won
+  | Lost
+
+type error =
+  | NoPlaysLeft
+  | NoDiscardsLeft
+  | RoundOver
+  | BoardError of Board.error
+
+(** Padrão: 4 jogadas, 3 descartes. *)
+val create : ?plays:int -> ?discards:int -> target:int -> Board.t -> t
+
+(** Joga as cartas dos índices; devolve a jogada, os pontos dela e a rodada nova. *)
+val play : Poker.Levels.t -> int list -> t -> (Play.t * int * t, error) result
+
+val discard : int list -> t -> (t, error) result
+val status : t -> status
+val board : t -> Board.t
+val target : t -> int
+val chips : t -> int (* pontos acumulados *)
+val plays_left : t -> int
+val discards_left : t -> int
