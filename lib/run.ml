@@ -64,8 +64,13 @@ let blind { blind; _ } = blind
 let levels { levels; _ } = levels
 
 (* TODO: derive it from Blind.status, the ante and the stage. *)
-let status _run = failwith "TODO: Run.status"
-let play _indices _run = failwith "TODO: Run.play"
-let discard _indices _run = failwith "TODO: Run.discard"
+let status run =
+  let { ante; blind; _ } = run in
+  match Blind.status blind, ante with
+  | Blind.Lost, _ -> Lost
+  | Blind.Won, final_ante -> Won
+  | _ -> InProgress
+;;
+
 let next_blind _rng _run = failwith "TODO: Run.next_blind"
 let use_planet _planet _run = failwith "TODO: Run.use_planet"
