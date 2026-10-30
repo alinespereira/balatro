@@ -47,30 +47,30 @@ let status = function
 
 let play levels indices blind =
   match status blind with
-  | Lost
-  | Won ->
-    Error RoundOver
+  | Lost -> Error NoPlaysLeft
+  | Won -> Error RoundOver
   | InProgress ->
     let* play, board =
       blind |> board |> Board.play indices |> Result.map_error (fun e -> BoardError e)
     in
     let score = Play.score levels play in
-    let chips = Score.total score in
+    let play_chips = Score.total score in
     Ok
       ( play,
-        chips,
+        play_chips,
         {
           blind with
           board = Board.refill board;
           plays_left = blind.plays_left - 1;
-          chips = blind.chips + chips;
+          chips = blind.chips + play_chips;
         } )
 ;;
 
 let discard indices blind =
   match status blind, discards_left blind with
-  | Lost, _ -> Error NoPlaysLeft
-  | Won, _ -> Error RoundOver
+  | Lost, _
+  | Won, _ ->
+    Error RoundOver
   | InProgress, discards_left when discards_left <= 0 -> Error NoDiscardsLeft
   | InProgress, discards_left ->
     let* board =
