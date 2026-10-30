@@ -23,6 +23,7 @@ type error =
   | RunOver
 [@@deriving show]
 
+let ( let* ) = Result.bind
 let final_ante = 8
 
 module IntMap = Map.Make (Int)
@@ -37,10 +38,26 @@ let ante_score =
 ;;
 
 (* TODO: base points per ante times a factor per stage. *)
-let target ~ante:_ _stage = failwith "TODO: Run.target"
+let rec target ~ante stage =
+  let base_score = IntMap.find ante ante_score in
+  score_multiplier stage *. base_score |> Int.of_float
 
-(* TODO: build the first blind with Board.create and Blind.create. *)
-let create _rng _color = failwith "TODO: Run.create"
+and score_multiplier stage =
+  match stage with
+  | Small -> 1.0
+  | Big -> 1.5
+  | Boss -> 2.0
+;;
+
+let create rng color =
+  let run_ante = 1 in
+  let run_stage = Small in
+  let run_target = target run_stage ~ante:run_ante in
+  let run_board = Board.create rng color in
+  let run_blind = Blind.create ~target:run_target run_board in
+  { ante = run_ante; stage = run_stage; blind = run_blind; levels = Poker.Levels.initial }
+;;
+
 let ante { ante; _ } = ante
 let stage { stage; _ } = stage
 let blind { blind; _ } = blind
