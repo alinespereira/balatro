@@ -5,15 +5,20 @@
     carry over from one blind to the next, but every blind starts with a new board and
     a freshly shuffled deck. *)
 
-(** Abstract: the current ante and stage, the blind being played and the hand levels. *)
-type t
-
 (** Which of the three blinds of an ante is being played. *)
 type stage =
   | Small
   | Big
   | Boss
 [@@deriving show, eq]
+
+(** The current ante and stage, the blind being played and the hand levels. *)
+type t = {
+  ante: int;
+  stage: stage;
+  blind: Blind.t;
+  levels: Poker.Levels.t;
+}
 
 (** [InProgress] also covers a blind that was just beaten and is waiting for
     [next_blind]; check [Blind.status (blind run)] to tell the two apart. *)
