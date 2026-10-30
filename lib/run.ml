@@ -80,6 +80,13 @@ let play indices run =
   Ok (the_play, won_chips, { run with blind = the_blind })
 ;;
 
+let discard indices run =
+  let { blind = the_blind; _ } = run in
+  let* the_blind =
+    the_blind |> Blind.discard indices |> Result.map_error (fun e -> BlindError e)
+  in
+  Ok { run with blind = the_blind }
+;;
 
 let next_blind _rng _run = failwith "TODO: Run.next_blind"
 let use_planet _planet _run = failwith "TODO: Run.use_planet"
