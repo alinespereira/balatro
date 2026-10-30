@@ -20,4 +20,4 @@ val apply : change -> t -> t
 val apply_all : change list -> t -> t
 
 (** [chips × mult]. *)
-val total : t -> float
+val total : t -> int

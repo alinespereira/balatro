@@ -49,3 +49,5 @@ val is_royal_flush : Card.t list -> bool
 val is_five_of_a_kind : Card.t list -> bool
 val is_flush_house : Card.t list -> bool
 val is_flush_five : Card.t list -> bool
+
+val scoring_cards : t -> Card.t list -> Card.t list
