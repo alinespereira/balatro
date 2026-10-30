@@ -65,10 +65,10 @@ let levels { levels; _ } = levels
 
 (* TODO: derive it from Blind.status, the ante and the stage. *)
 let status run =
-  let { ante; blind; _ } = run in
-  match Blind.status blind, ante with
+  let { ante; stage; blind; _ } = run in
+  match Blind.status blind, stage with
   | Blind.Lost, _ -> Lost
-  | Blind.Won, final_ante -> Won
+  | Blind.Won, Boss when ante = final_ante -> Won
   | _ -> InProgress
 ;;
 
