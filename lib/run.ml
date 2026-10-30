@@ -37,16 +37,16 @@ let ante_score =
   |> IntMap.of_seq
 ;;
 
-(* TODO: base points per ante times a factor per stage. *)
-let rec target ~ante stage =
-  let base_score = IntMap.find ante ante_score in
-  score_multiplier stage *. base_score |> Int.of_float
-
-and score_multiplier stage =
+let score_multiplier stage =
   match stage with
   | Small -> 1.0
   | Big -> 1.5
   | Boss -> 2.0
+;;
+
+let target ~ante stage =
+  let base_score = IntMap.find ante ante_score in
+  score_multiplier stage *. base_score |> Int.of_float
 ;;
 
 let create rng color =
@@ -63,7 +63,6 @@ let stage { stage; _ } = stage
 let blind { blind; _ } = blind
 let levels { levels; _ } = levels
 
-(* TODO: derive it from Blind.status, the ante and the stage. *)
 let status run =
   let { ante; stage; blind; _ } = run in
   match Blind.status blind, stage with
@@ -88,7 +87,7 @@ let discard indices run =
   Ok { run with blind = the_blind }
 ;;
 
-let next_blind _rng _run = failwith "TODO: Run.next_blind"
+let next_blind rng run = failwith "TODO: Run.next_blind"
 
 let use_planet planet run =
   { run with levels = run |> levels |> Poker.Levels.use_planet planet }
