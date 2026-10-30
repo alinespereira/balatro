@@ -13,9 +13,10 @@ let test_refill color =
   assert (List.length drawn = 8);
   assert (List.length remaining = 44);
   (* Every original card is in exactly one place: the hand or the deck. *)
+  let same_card (a : Card.t) (b : Card.t) = a.suit = b.suit && a.rank = b.rank in
   List.iter
     (fun card ->
-       let occurrences = List.filter (Card.equal card) (drawn @ remaining) in
+       let occurrences = List.filter (same_card card) (drawn @ remaining) in
        assert (List.length occurrences = 1))
     original_cards;
   (* Filling an already full hand must not consume more cards. *)
