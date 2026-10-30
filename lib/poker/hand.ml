@@ -52,7 +52,13 @@ type evaluation = {
   scoring_cards: Card.t list;
 }
 
-type error = InvalidCardCount of int
+type error =
+  | InvalidCardCount of int
+  | InvalidIndex of int
+  | DuplicateIndex of int
+  | NoCards
+  | TooManyCards
+[@@deriving show]
 
 let group_by_rank = Util.groups ~key:(fun (card : Card.t) -> card.rank)
 let group_by_suit = Util.groups ~key:(fun (card : Card.t) -> card.suit)
