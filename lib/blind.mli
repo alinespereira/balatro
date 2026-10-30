@@ -7,12 +7,14 @@ type status =
   | InProgress
   | Won
   | Lost
+[@@deriving show, eq]
 
 type error =
   | NoPlaysLeft
   | NoDiscardsLeft
   | RoundOver
   | BoardError of Board.error
+[@@deriving show]
 
 (** Padrão: 4 jogadas, 3 descartes. *)
 val create : ?plays:int -> ?discards:int -> target:int -> Board.t -> t

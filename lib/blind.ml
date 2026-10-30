@@ -10,12 +10,14 @@ type status =
   | InProgress
   | Won
   | Lost
+[@@deriving show, eq]
 
 type error =
   | NoPlaysLeft
   | NoDiscardsLeft
   | RoundOver
   | BoardError of Board.error
+[@@deriving show]
 
 let ( let* ) = Result.bind
 let default_plays = 4
