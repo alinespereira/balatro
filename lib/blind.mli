@@ -24,6 +24,6 @@ val discard : int list -> t -> (t, error) result
 val status : t -> status
 val board : t -> Board.t
 val target : t -> int
-val chips : t -> int (* pontos acumulados *)
+val chips : t -> int
 val plays_left : t -> int
 val discards_left : t -> int

@@ -22,7 +22,13 @@ let default_plays = 4
 let default_discards = 3
 
 let create ?(plays = default_plays) ?(discards = default_discards) ~target board =
-  { board; target; plays_left = plays; discards_left = discards; chips = 0 }
+  {
+    board = Board.refill board;
+    target;
+    plays_left = plays;
+    discards_left = discards;
+    chips = 0;
+  }
 ;;
 
 let board { board; _ } = board
@@ -39,8 +45,9 @@ let status = function
 
 let play levels indices blind =
   match status blind with
-  | Lost -> Error NoPlaysLeft
-  | Won -> Error RoundOver
+  | Lost
+  | Won ->
+    Error RoundOver
   | InProgress ->
     let* play, board =
       blind |> board |> Board.play indices |> Result.map_error (fun e -> BoardError e)
@@ -52,25 +59,20 @@ let play levels indices blind =
         chips,
         {
           blind with
-          board;
+          board = Board.refill board;
           plays_left = blind.plays_left - 1;
           chips = blind.chips + chips;
         } )
 ;;
 
 let discard indices blind =
-  match status blind with
-  | Lost -> Error NoPlaysLeft
-  | Won -> Error RoundOver
-  | InProgress ->
-    (match blind with
-     | { discards_left; _ } when discards_left <= 0 -> Error NoDiscardsLeft
-     | _ ->
-       let* board =
-         blind
-         |> board
-         |> Board.discard indices
-         |> Result.map_error (fun e -> BoardError e)
-       in
-       Ok { blind with board; discards_left = blind.discards_left - 1 })
+  match status blind, discards_left blind with
+  | Lost, _ -> Error NoPlaysLeft
+  | Won, _ -> Error RoundOver
+  | InProgress, discards_left when discards_left <= 0 -> Error NoDiscardsLeft
+  | InProgress, discards_left ->
+    let* board =
+      blind |> board |> Board.discard indices |> Result.map_error (fun e -> BoardError e)
+    in
+    Ok { blind with board = Board.refill board; discards_left = discards_left - 1 }
 ;;
