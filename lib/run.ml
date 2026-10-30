@@ -72,5 +72,14 @@ let status run =
   | _ -> InProgress
 ;;
 
+let play indices run =
+  let { blind = the_blind; levels = the_levels; _ } = run in
+  let* the_play, won_chips, the_blind =
+    the_blind |> Blind.play the_levels indices |> Result.map_error (fun e -> BlindError e)
+  in
+  Ok (the_play, won_chips, { run with blind = the_blind })
+;;
+
+
 let next_blind _rng _run = failwith "TODO: Run.next_blind"
 let use_planet _planet _run = failwith "TODO: Run.use_planet"
