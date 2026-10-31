@@ -56,7 +56,14 @@ type context = {
   jokers: t list;
 }
 
-let rec changes ctx joker =
+let scoring_with_suit ~suit play =
+  play
+  |> Play.scoring_cards
+  |> List.filter (fun { Card.suit = s; _ } -> s = suit)
+  |> List.length
+;;
+
+let changes ctx joker =
   let { play; discards_left; jokers } = ctx in
   match joker with
   | Joker -> [Score.AddMult 4.0]
@@ -93,12 +100,6 @@ let rec changes ctx joker =
   | Banner ->
     let { discards_left; _ } = ctx in
     [Score.AddChips (30 * discards_left)]
-
-and scoring_with_suit ~suit play =
-  play
-  |> Play.scoring_cards
-  |> List.filter (fun { Card.suit; _ } -> suit = suit)
-  |> List.length
 ;;
 
 let all_changes ctx = ctx.jokers |> List.concat_map (changes ctx)
