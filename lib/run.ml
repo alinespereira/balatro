@@ -9,6 +9,7 @@ type t = {
   stage: stage;
   blind: Blind.t;
   levels: Poker.Levels.t;
+  money: int;
 }
 
 type status =
@@ -25,6 +26,10 @@ type error =
 
 let ( let* ) = Result.bind
 let final_ante = 8
+let starting_money = 4
+
+(* TODO *)
+let reward _ = failwith "Run.reward: not implemented"
 
 let score_multiplier stage =
   match stage with
@@ -55,13 +60,20 @@ let create rng color =
   let run_target = target run_stage ~ante:run_ante in
   let run_board = Board.create rng color in
   let run_blind = Blind.create ~target:run_target run_board in
-  { ante = run_ante; stage = run_stage; blind = run_blind; levels = Poker.Levels.initial }
+  {
+    ante = run_ante;
+    stage = run_stage;
+    blind = run_blind;
+    levels = Poker.Levels.initial;
+    money = starting_money;
+  }
 ;;
 
 let ante { ante; _ } = ante
 let stage { stage; _ } = stage
 let blind { blind; _ } = blind
 let levels { levels; _ } = levels
+let money { money; _ } = money
 
 let status run =
   let { ante; stage; blind; _ } = run in
@@ -102,11 +114,15 @@ let next_blind rng run =
   | Won, None ->
     Error RunOver
   | Won, Some (new_ante, new_stage) ->
+    (* TODO: pay the blind that was just beaten. Build the payout from [reward], the
+       plays left in [the_blind] and the money before paying, then add its total to the
+       money of the new run. *)
+    let payout = failwith "Run.next_blind: payout not implemented" in
     let the_board = Blind.board the_blind in
     let new_target = target new_stage ~ante:new_ante in
     let new_board = Board.reset rng the_board in
     let new_blind = Blind.create ~target:new_target new_board in
-    Ok { run with ante = new_ante; stage = new_stage; blind = new_blind }
+    Ok (payout, { run with ante = new_ante; stage = new_stage; blind = new_blind })
 ;;
 
 let use_planet planet run =

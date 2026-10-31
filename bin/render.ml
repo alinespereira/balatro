@@ -42,7 +42,7 @@ let hand cards =
 ;;
 
 let status run =
-  let { Run.ante; Run.stage; Run.blind; _ } = run in
+  let { Run.ante; Run.stage; Run.blind; Run.money; _ } = run in
   let { Blind.target; Blind.plays_left; Blind.discards_left; Blind.chips; _ } = blind in
   Printf.sprintf
     {|
@@ -53,6 +53,7 @@ let status run =
     Chips: %d
     Plays: %d
     Discards: %d
+    Money: $%d
   |}
     ante
     (Run.show_stage stage)
@@ -60,6 +61,7 @@ let status run =
     chips
     plays_left
     discards_left
+    money
 ;;
 
 let play play points =
@@ -71,6 +73,21 @@ let play play points =
   |}
     hand
     points
+;;
+
+let payout payout =
+  let { Payout.blind; Payout.plays; Payout.interest } = payout in
+  Printf.sprintf
+    {|
+    Recompensa do blind: $%d
+    Jogadas restantes: $%d
+    Juros: $%d
+    Total: $%d
+  |}
+    blind
+    plays
+    interest
+    (Payout.total payout)
 ;;
 
 let board_error : Board.error -> string = function

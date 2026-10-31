@@ -36,8 +36,9 @@ let rec loop ?(help = false) rng (run : Run.t) : unit =
           (match Run.status new_run with
            | InProgress when Blind.status (Run.blind new_run) = Blind.Won ->
              (match Run.next_blind rng new_run with
-              | Ok next ->
+              | Ok (payout, next) ->
                 print_endline "Blind vencido!";
+                print_endline (Render.payout payout);
                 loop rng next
               | Error e -> print_endline (Render.error e))
            | InProgress -> loop rng new_run

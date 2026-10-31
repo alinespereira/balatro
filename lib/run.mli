@@ -3,7 +3,8 @@
     Every ante has three blinds, played in order: [Small], [Big] and [Boss]. Beating
     the boss blind of [final_ante] wins the run; losing any blind loses it. Hand levels
     carry over from one blind to the next, but every blind starts with a new board and
-    a freshly shuffled deck. *)
+    a freshly shuffled deck. Money also carries over: the run starts with
+    [starting_money] and every beaten blind pays a [Payout.t]. *)
 
 (** Which of the three blinds of an ante is being played. *)
 type stage =
@@ -12,12 +13,13 @@ type stage =
   | Boss
 [@@deriving show, eq]
 
-(** The current ante and stage, the blind being played and the hand levels. *)
+(** The current ante and stage, the blind being played, the hand levels and the money. *)
 type t = private {
   ante: int;
   stage: stage;
   blind: Blind.t;
   levels: Poker.Levels.t;
+  money: int;
 }
 
 (** [InProgress] also covers a blind that was just beaten and is waiting for
@@ -41,13 +43,21 @@ val final_ante : int
     within an ante [Small < Big < Boss]. *)
 val target : ante:int -> stage -> int
 
-(** A run at the small blind of ante 1, every hand at level 1. *)
+(** What a run starts with: $4. *)
+val starting_money : int
+
+(** What beating the blind at [stage] pays before plays and interest: $3 for [Small],
+    $4 for [Big] and $5 for [Boss]. *)
+val reward : stage -> int
+
+(** A run at the small blind of ante 1, every hand at level 1, with [starting_money]. *)
 val create : Random.State.t -> Deck.color -> t
 
 val ante : t -> int
 val stage : t -> stage
 val blind : t -> Blind.t
 val levels : t -> Poker.Levels.t
+val money : t -> int
 val status : t -> status
 
 (** Plays the cards at the given positions of the hand in the current blind, scored
@@ -59,8 +69,11 @@ val discard : int list -> t -> (t, error) result
 
 (** Moves on to the next blind once the current one is beaten: [Small] to [Big],
     [Big] to [Boss], and [Boss] to the [Small] blind of the next ante. The new blind
-    gets a new board with a deck of the same color, shuffled with the given state. *)
-val next_blind : Random.State.t -> t -> (t, error) result
+    gets a new board with a deck of the same color, shuffled with the given state.
+
+    The blind that was just beaten is paid first: the payout is added to the money and
+    returned, so it can be shown. *)
+val next_blind : Random.State.t -> t -> (Payout.t * t, error) result
 
 (** Levels up the hands of the planet. The new levels count from the next play on. *)
 val use_planet : Consumables.Planet.t -> t -> t
