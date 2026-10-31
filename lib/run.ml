@@ -29,7 +29,11 @@ let final_ante = 8
 let starting_money = 4
 
 (* TODO *)
-let reward _ = failwith "Run.reward: not implemented"
+let reward = function
+  | Small -> 3
+  | Big -> 4
+  | Boss -> 5
+;;
 
 let score_multiplier stage =
   match stage with
