@@ -22,3 +22,4 @@ let help =
   d 2 4     discard the cards at positions 2 and 4
   h         show this help
   q         quit|}
+;;

@@ -16,3 +16,4 @@ let () =
   let run = Run.create rng Deck.Red in
   print_endline Command.help;
   loop rng run
+;;
