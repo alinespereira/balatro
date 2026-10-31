@@ -41,3 +41,4 @@ let () =
   test_interest ();
   test_rewards ();
   test_starting_money ()
+;;
