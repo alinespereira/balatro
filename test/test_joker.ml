@@ -16,6 +16,11 @@ let two_pair =
   play Card.[create Spades Ace; create Hearts Ace; create Spades King; create Hearts King]
 ;;
 
+(* A pair played with two kickers: four cards played, two of them score. *)
+let pair_with_kickers =
+  play Card.[create Spades Ace; create Hearts Ace; create Clubs Two; create Clubs Five]
+;;
+
 let context ?(discards_left = 0) ?(jokers = []) play =
   { Joker.play; Joker.discards_left; Joker.jokers }
 ;;
@@ -54,6 +59,11 @@ let test_changes () =
     ~expected_mult:20.
     (one ~ctx:(context pair_of_diamonds) HalfJoker);
   check ~expected_chips:0 ~expected_mult:0. (one ~ctx:(context two_pair) HalfJoker);
+  (* Half Joker counts every card played, not only the ones that score. *)
+  check
+    ~expected_chips:0
+    ~expected_mult:0.
+    (one ~ctx:(context pair_with_kickers) HalfJoker);
   check
     ~expected_chips:60
     ~expected_mult:0.
