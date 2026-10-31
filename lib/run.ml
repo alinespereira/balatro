@@ -120,10 +120,9 @@ let next_blind rng run =
     Error RunOver
   | Won, Some (new_ante, new_stage) ->
     let the_reward = reward the_stage in
-    let plays_left = Blind.plays_left the_blind in
+    let { Blind.plays_left; Blind.board = the_board; _ } = the_blind in
     let money = the_money in
     let payout = Payout.make ~reward:the_reward ~plays_left ~money in
-    let the_board = Blind.board the_blind in
     let new_target = target new_stage ~ante:new_ante in
     let new_board = Board.reset rng the_board in
     let new_blind = Blind.create ~target:new_target new_board in
