@@ -39,16 +39,10 @@ let add_joker joker board =
 
 let remove_joker idx board =
   let { jokers; _ } = board in
-  let indexed_jokers = jokers |> List.mapi (fun i j -> i, j) in
-  match List.assoc_opt idx indexed_jokers with
-  | Some joker ->
-    Ok
-      ( joker,
-        {
-          board with
-          jokers = indexed_jokers |> List.remove_assoc idx |> List.split |> snd;
-        } )
-  | None -> Error (NoJokerAt (idx + 1))
+  match List.nth_opt jokers idx with
+  | Some joker when idx >= 0 ->
+    Ok (joker, { board with jokers = List.filteri (fun i _ -> i != idx) jokers })
+  | _ -> Error (NoJokerAt idx)
 ;;
 
 let create rng color =
