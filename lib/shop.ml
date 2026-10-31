@@ -23,14 +23,16 @@ let all_items =
   @ List.map (fun planet -> PlanetItem planet) Consumables.Planet.all
 ;;
 
+let draw_offers rng = all_items |> Util.shuffle rng |> List.take offer_count
+
 let create rng =
-  let offers = all_items |> Util.shuffle rng |> List.take offer_count in
+  let offers = draw_offers rng in
   { offers; reroll_cost = base_reroll_cost }
 ;;
 
 let take idx shop =
   let { offers; _ } = shop in
-  if idx < 0 || idx >= List.length offers then
+  if idx < 0 then
     Error (NoOfferAt idx)
   else (
     match List.nth_opt offers idx with
@@ -41,7 +43,7 @@ let take idx shop =
 ;;
 
 let reroll rng shop =
-  let new_offers = all_items |> Util.shuffle rng |> List.take offer_count in
+  let new_offers = draw_offers rng in
   let { reroll_cost; _ } = shop in
   { offers = new_offers; reroll_cost = reroll_cost + 1 }
 ;;
