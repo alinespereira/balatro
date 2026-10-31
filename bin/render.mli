@@ -7,6 +7,16 @@ val card : Balatro.Card.t -> string
 (** The hand on one line, each card under its 1-based position. *)
 val hand : Balatro.Card.t list -> string
 
+(** The name the player sees, in Portuguese. *)
+val joker_name : Balatro.Joker.t -> string
+
+(** What the joker does, in Portuguese. *)
+val joker_description : Balatro.Joker.t -> string
+
+(** The jokers owned, one per line under their 1-based position, or an empty string
+    when there are none. *)
+val jokers : Balatro.Joker.t list -> string
+
 (** Ante, stage, chips against the target, the plays and discards left, and the money. *)
 val status : Balatro.Run.t -> string
 

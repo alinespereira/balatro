@@ -4,6 +4,8 @@ type error =
   | InvalidIndex of int
   | DuplicateIndex of int
   | InvalidPlay of Poker.Hand.error
+  | NoJokerSlot
+  | NoJokerAt of int
 [@@deriving show]
 
 type t = {
@@ -25,6 +27,13 @@ let ( let* ) = Result.bind
 let deck { deck; _ } = deck
 let hand { hand; _ } = hand
 let discarded { discarded; _ } = discarded
+let jokers { jokers; _ } = jokers
+
+(* TODO: [NoJokerSlot] when [joker_slots] are all taken. *)
+let add_joker _ _ = failwith "Board.add_joker: not implemented"
+
+(* TODO: [NoJokerAt] when the position is out of range. *)
+let remove_joker _ _ = failwith "Board.remove_joker: not implemented"
 
 let create rng color =
   let deck = Deck.create color |> Deck.shuffle rng in

@@ -12,6 +12,7 @@ let rec loop ?(help = false) rng (run : Run.t) : unit =
   clear_screen ();
   if help then print_endline Command.help;
   print_endline (Render.status run);
+  print_endline (run |> Run.blind |> Blind.board |> Board.jokers |> Render.jokers);
   print_endline (run |> Run.blind |> Blind.board |> Board.hand |> Render.hand);
   print_string "> ";
   flush stdout;

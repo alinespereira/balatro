@@ -53,7 +53,14 @@ let play levels indices blind =
     let* play, board =
       blind |> board |> Board.play indices |> Result.map_error (fun e -> BoardError e)
     in
-    let score = Play.score levels play in
+    let context =
+      {
+        Joker.play;
+        Joker.discards_left = blind.discards_left;
+        Joker.jokers = Board.jokers board;
+      }
+    in
+    let score = Play.score levels play |> Score.apply_all (Joker.all_changes context) in
     let play_chips = Score.total score in
     Ok
       ( play,
