@@ -40,8 +40,8 @@ let add_joker joker board =
 let remove_joker idx board =
   let { jokers; _ } = board in
   let lookup_idx = List.length jokers - (idx + 1) in
-  match List.nth_opt jokers lookup_idx with
-  | Some joker when lookup_idx >= 0 ->
+  match List.nth_opt jokers idx with
+  | Some joker when idx >= 0 ->
     Ok (joker, { board with jokers = List.filteri (fun i _ -> i <> lookup_idx) jokers })
   | _ -> Error (NoJokerAt idx)
 ;;
