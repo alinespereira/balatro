@@ -29,6 +29,7 @@ let ( let* ) = Result.bind
 let deck { deck; _ } = deck
 let hand { hand; _ } = hand
 let discarded { discarded; _ } = discarded
+
 (* TODO: the field is most recent first, but [Board.jokers] promises left to right
    (scoring order), so reverse it here. *)
 let jokers { jokers; _ } = jokers
