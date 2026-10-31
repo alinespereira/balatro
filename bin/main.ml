@@ -1,15 +1,14 @@
 open Balatro
 
-(* TODO: print the status and the hand, read a line with In_channel.input_line,
-   parse it with Command.parse and act on it:
-   - Play: call Run.play, show the result, then check Run.status and
-     Blind.status (Run.blind run) to know whether to call Run.next_blind;
-   - Discard: call Run.discard;
-   - Help: print Command.help;
-   - Quit, or end of input: stop.
-   Call [loop] again with the new run until the run is Won or Lost; it will need
-   [rec] then. *)
+let wait = Unix.sleepf 1.5
+
+let clear_screen =
+  print_string "\027[2J\027[H";
+  flush stdout
+;;
+
 let rec loop rng (run : Run.t) : unit =
+  clear_screen;
   print_endline (Render.status run);
   print_endline (run |> Run.blind |> Blind.board |> Board.hand |> Render.hand);
   print_string "> ";
@@ -20,21 +19,37 @@ let rec loop rng (run : Run.t) : unit =
     (match Command.parse line with
      | Error e ->
        print_endline (Command.error_message e);
+       wait;
        loop rng run
-     | Ok Command.Help -> print_endline Command.help
+     | Ok Command.Help ->
+       print_endline Command.help;
+       loop rng run
      | Ok Command.Quit -> ()
      | Ok (Command.Play indices) ->
        (match Run.play indices run with
-        | Error e -> print_endline (Render.error e)
+        | Error e ->
+          print_endline (Render.error e);
+          wait;
+          loop rng run
         | Ok (play, points, new_run) ->
           print_endline (Render.play play points);
           (match Run.status new_run with
+           | InProgress when Blind.status (Run.blind new_run) = Blind.Won ->
+             (match Run.next_blind rng new_run with
+              | Ok next ->
+                print_endline "Blind vencido!";
+                wait;
+                loop rng next
+              | Error e -> print_endline (Render.error e))
            | InProgress -> loop rng new_run
-           | Won -> print_endline "You Won"
-           | Lost -> print_endline "You Lost"))
+           | Won -> print_endline "Você venceu!"
+           | Lost -> print_endline "Você perdeu!"))
      | Ok (Command.Discard indices) ->
        (match Run.discard indices run with
-        | Error e -> print_endline (Render.error e)
+        | Error e ->
+          print_endline (Render.error e);
+          wait;
+          loop rng run
         | Ok new_run -> loop rng new_run))
 ;;
 

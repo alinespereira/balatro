@@ -35,7 +35,7 @@ let hand cards =
     |> String.concat sep
   in
   let indices_row =
-    List.mapi (fun i _ -> Printf.sprintf " %3d" (i + 1)) cards |> String.concat sep
+    List.mapi (fun i _ -> Printf.sprintf "  %3d " (i + 1)) cards |> String.concat sep
   in
   let divider_row = String.make (String.length indices_row) '-' in
   String.concat "\n" [indices_row; divider_row; cards_row]
