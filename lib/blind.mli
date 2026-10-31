@@ -1,7 +1,12 @@
 (** Uma rodada: bater [target] pontos antes de acabarem as jogadas. *)
 
-(** Abstrato: board + meta + jogadas/descartes restantes + pontos. *)
-type t
+type t = private {
+  board: Board.t;
+  target: int;
+  plays_left: int;
+  discards_left: int;
+  chips: int;
+}
 
 type status =
   | InProgress

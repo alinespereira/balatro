@@ -40,6 +40,14 @@ let create rng color =
   }
 ;;
 
+let reset rng board =
+  let { deck; hand; discarded; _ } = board in
+  let cards = Deck.cards deck @ hand @ discarded in
+  let deck = Deck.set_cards cards deck in
+  let deck = Deck.shuffle rng deck in
+  { board with deck; hand = []; discarded = [] }
+;;
+
 (* The deck is shuffled once in [create], so drawing is just taking cards from the top.
    [Util.split_at] returns fewer cards when the deck runs out, so an empty deck is not
    an error: the hand simply stays smaller. *)

@@ -4,4 +4,9 @@ type rarity =
   | Rare
   | Legendary
 
-type t
+type t = private {
+  name: string;
+  description: string;
+  rarity: rarity;
+  cost: int;
+}

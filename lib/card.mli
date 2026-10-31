@@ -21,7 +21,7 @@ type rank =
   | Ace
 [@@deriving show, eq, ord, enum, enumerate]
 
-type t = {
+type t = private {
   suit: suit;
   rank: rank;
   decoration: Decoration.t;

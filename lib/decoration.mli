@@ -20,7 +20,7 @@ type seal =
   | Gold
   | Purple
 
-type t = {
+type t = private {
   enhancement: enhancement option;
   edition: edition option;
   seal: seal option;
