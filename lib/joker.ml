@@ -56,8 +56,6 @@ type context = {
   jokers: t list;
 }
 
-(* TODO: one case per joker. [Play.scoring_cards], [Play.cards] and [Play.hand] have
-   what the conditions need. *)
 let rec changes ctx joker =
   let { play; discards_left; jokers } = ctx in
   match joker with
@@ -103,5 +101,4 @@ and scoring_with_suit ~suit play =
   |> List.length
 ;;
 
-(* TODO *)
-let all_changes ctx = ctx.jokers |> List.map (changes ctx) |> List.flatten
+let all_changes ctx = ctx.jokers |> List.concat_map (changes ctx)
