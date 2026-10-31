@@ -40,13 +40,19 @@ let test_changes () =
     ~expected_chips:0
     ~expected_mult:6.
     (one ~ctx:(context pair_of_diamonds) Joker.GreedyJoker);
-  check ~expected_chips:0 ~expected_mult:0. (one ~ctx:(context pair_of_diamonds) LustyJoker);
+  check
+    ~expected_chips:0
+    ~expected_mult:0.
+    (one ~ctx:(context pair_of_diamonds) LustyJoker);
   check ~expected_chips:0 ~expected_mult:3. (one LustyJoker);
   check ~expected_chips:0 ~expected_mult:3. (one WrathfulJoker);
   check ~expected_chips:0 ~expected_mult:0. (one GluttonousJoker);
   check ~expected_chips:0 ~expected_mult:8. (one JollyJoker);
   check ~expected_chips:0 ~expected_mult:0. (one ~ctx:(context two_pair) JollyJoker);
-  check ~expected_chips:0 ~expected_mult:20. (one ~ctx:(context pair_of_diamonds) HalfJoker);
+  check
+    ~expected_chips:0
+    ~expected_mult:20.
+    (one ~ctx:(context pair_of_diamonds) HalfJoker);
   check ~expected_chips:0 ~expected_mult:0. (one ~ctx:(context two_pair) HalfJoker);
   check
     ~expected_chips:60
@@ -73,7 +79,8 @@ let test_sell_value () =
   assert (Joker.sell_value Joker.Joker = 1);
   assert (Joker.sell_value Joker.GreedyJoker = 2);
   List.iter
-    (fun joker -> assert (Joker.sell_value joker >= 1 && Joker.sell_value joker < Joker.cost joker))
+    (fun joker ->
+       assert (Joker.sell_value joker >= 1 && Joker.sell_value joker < Joker.cost joker))
     Joker.all
 ;;
 
