@@ -48,7 +48,7 @@ let remove_joker idx board =
   let { jokers; _ } = board in
   match List.nth_opt jokers idx with
   | Some joker when idx >= 0 ->
-    Ok (joker, { board with jokers = List.filteri (fun i _ -> i != idx) jokers })
+    Ok (joker, { board with jokers = List.filteri (fun i _ -> i <> idx) jokers })
   | _ -> Error (NoJokerAt idx)
 ;;
 
