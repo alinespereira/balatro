@@ -1,6 +1,6 @@
 (** Uma rodada: bater [target] pontos antes de acabarem as jogadas. *)
 
-type t = {
+type t = private {
   board: Board.t;
   target: int;
   plays_left: int;

@@ -1,9 +1,12 @@
-type t
-
 type color =
   | Red
   | Blue
   | Green
+
+type t = private {
+  cards: Card.t list;
+  color: color;
+}
 
 val create : color -> t
 val shuffle : Random.State.t -> t -> t

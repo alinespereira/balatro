@@ -1,5 +1,5 @@
 (** Chips and mult, the two numbers a hand multiplies together to score. *)
-type t = {
+type t = private {
   chips: int;
   mult: float;
 }

@@ -13,7 +13,7 @@ type stage =
 [@@deriving show, eq]
 
 (** The current ante and stage, the blind being played and the hand levels. *)
-type t = {
+type t = private {
   ante: int;
   stage: stage;
   blind: Blind.t;
