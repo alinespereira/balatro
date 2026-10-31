@@ -26,17 +26,6 @@ type error =
 let ( let* ) = Result.bind
 let final_ante = 8
 
-module IntMap = Map.Make (Int)
-
-let ante_base = [300; 800; 2000; 5000; 11000; 20000; 35000; 50000]
-
-let ante_score =
-  ante_base
-  |> List.mapi (fun idx target -> idx + 1, Float.of_int target)
-  |> List.to_seq
-  |> IntMap.of_seq
-;;
-
 let score_multiplier stage =
   match stage with
   | Small -> 1.0
@@ -44,9 +33,20 @@ let score_multiplier stage =
   | Boss -> 2.0
 ;;
 
+let ante_base = function
+  | 1 -> 300
+  | 2 -> 800
+  | 3 -> 2_000
+  | 4 -> 5_000
+  | 5 -> 11_000
+  | 6 -> 20_000
+  | 7 -> 35_000
+  | 8 -> 50_000
+  | ante -> invalid_arg (Printf.sprintf "Run.target: no ante %d" ante)
+;;
+
 let target ~ante stage =
-  let base_score = IntMap.find ante ante_score in
-  score_multiplier stage *. base_score |> Int.of_float
+  Float.of_int (ante_base ante) *. score_multiplier stage |> Int.of_float
 ;;
 
 let create rng color =
