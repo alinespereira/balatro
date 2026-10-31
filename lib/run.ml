@@ -119,10 +119,10 @@ let next_blind rng run =
   | Won, None ->
     Error RunOver
   | Won, Some (new_ante, new_stage) ->
-    let reward = reward the_stage in
+    let the_reward = reward the_stage in
     let plays_left = Blind.plays_left the_blind in
     let money = the_money in
-    let payout = Payout.make ~reward ~plays_left ~money in
+    let payout = Payout.make ~reward:the_reward ~plays_left ~money in
     let the_board = Blind.board the_blind in
     let new_target = target new_stage ~ante:new_ante in
     let new_board = Board.reset rng the_board in
@@ -134,7 +134,7 @@ let next_blind rng run =
           ante = new_ante;
           stage = new_stage;
           blind = new_blind;
-          money = Payout.total payout;
+          money = money + Payout.total payout;
         } )
 ;;
 
