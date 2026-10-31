@@ -7,8 +7,11 @@ type t = {
 
 let max_interest = 5
 
-(* TODO: $1 per play left, and $1 for every $5 of [money] up to [max_interest]. *)
-let make ~reward:_ ~plays_left:_ ~money:_ = failwith "Payout.make: not implemented"
+let make ~reward ~plays_left ~money =
+  let blind = reward in
+  let plays = plays_left in
+  let interest = min max_interest (money / 5) in
+  { blind; plays; interest }
+;;
 
-(* TODO *)
-let total _ = failwith "Payout.total: not implemented"
+let total { blind; plays; interest } = blind + plays + interest
