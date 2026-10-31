@@ -8,8 +8,6 @@ type error =
   | NoJokerAt of int
 [@@deriving show]
 
-(* TODO: [jokers] is stored most recent first (the last joker added is the head), so
-   [add_joker] can use [::]. Only [jokers] and [remove_joker] may rely on that. *)
 type t = {
   deck: Deck.t;
   hand: Card.t list;
