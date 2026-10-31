@@ -57,5 +57,6 @@ let help =
   p 1 3 5   joga as cartas nas posições 1, 3 e 5
   d 2 4     descarta as cartas nas posições 2 e 4
   h         mostra esta ajuda
+  ?         mostra esta ajuda
   q         sai do jogo|}
 ;;
