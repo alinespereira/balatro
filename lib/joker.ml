@@ -19,7 +19,19 @@ type t =
 [@@deriving show, eq, enumerate]
 
 (* All the jokers so far are common in Balatro. *)
-let rarity _ = Common
+let rarity = function
+  | Joker
+  | GreedyJoker
+  | LustyJoker
+  | WrathfulJoker
+  | GluttonousJoker
+  | JollyJoker
+  | HalfJoker
+  | Banner
+  | AbstractJoker
+  | Cavendish ->
+    Common
+;;
 
 let cost = function
   | Joker -> 2
@@ -36,8 +48,7 @@ let cost = function
     5
 ;;
 
-(* TODO *)
-let sell_value _ = failwith "Joker.sell_value: not implemented"
+let sell_value joker = max 1 (cost joker)
 
 type context = {
   play: Play.t;
@@ -47,7 +58,50 @@ type context = {
 
 (* TODO: one case per joker. [Play.scoring_cards], [Play.cards] and [Play.hand] have
    what the conditions need. *)
-let changes _ _ = failwith "Joker.changes: not implemented"
+let rec changes ctx joker =
+  let { play; discards_left; jokers } = ctx in
+  match joker with
+  | Joker -> [Score.AddMult 4.0]
+  | JollyJoker ->
+    let { Play.evaluation; _ } = play in
+    let { Poker.Hand.category; _ } = evaluation in
+    if category = Poker.Hand.Pair then
+      [Score.AddMult 8.0]
+    else
+      []
+  | AbstractJoker ->
+    let { jokers; _ } = ctx in
+    [Score.AddMult (3.0 *. float_of_int (List.length jokers))]
+  | Cavendish -> [Score.TimesMult 3.0]
+  | GreedyJoker ->
+    let scoring_diamonds = scoring_with_suit ~suit:Card.Diamonds play in
+    [Score.AddMult (3.0 *. float_of_int scoring_diamonds)]
+  | LustyJoker ->
+    let scoring_hearts = scoring_with_suit ~suit:Card.Hearts play in
+    [Score.AddMult (3.0 *. float_of_int scoring_hearts)]
+  | WrathfulJoker ->
+    let scoring_spades = scoring_with_suit ~suit:Card.Spades play in
+    [Score.AddMult (3.0 *. float_of_int scoring_spades)]
+  | GluttonousJoker ->
+    let scoring_clubs = scoring_with_suit ~suit:Card.Clubs play in
+    [Score.AddMult (3.0 *. float_of_int scoring_clubs)]
+  | HalfJoker ->
+    let { play; _ } = ctx in
+    let n = play |> Play.scoring_cards |> List.length in
+    if n <= 3 then
+      [Score.AddMult 20.0]
+    else
+      []
+  | Banner ->
+    let { discards_left; _ } = ctx in
+    [Score.AddChips (30 * discards_left)]
+
+and scoring_with_suit ~suit play =
+  play
+  |> Play.scoring_cards
+  |> List.filter (fun { Card.suit; _ } -> suit = suit)
+  |> List.length
+;;
 
 (* TODO *)
-let all_changes _ = failwith "Joker.all_changes: not implemented"
+let all_changes ctx = ctx.jokers |> List.map (changes ctx) |> List.flatten
