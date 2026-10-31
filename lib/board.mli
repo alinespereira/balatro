@@ -18,6 +18,8 @@ type error =
   | InvalidIndex of int
   | DuplicateIndex of int
   | InvalidPlay of Poker.Hand.error
+  | NoJokerSlot (** Every joker slot is taken. *)
+  | NoJokerAt of int (** There is no joker at that position (0-based). *)
 [@@deriving show]
 
 (** At most this many cards can be selected to play or discard. *)
@@ -29,6 +31,16 @@ val create : Random.State.t -> Deck.color -> t
 val reset : Random.State.t -> t -> t
 val deck : t -> Deck.t
 val hand : t -> Card.t list
+
+(** The jokers owned, in the order they score: left to right. *)
+val jokers : t -> Joker.t list
+
+(** Adds the joker to the right of the others, if a slot is free. *)
+val add_joker : Joker.t -> t -> (t, error) result
+
+(** Takes out the joker at the given position (0-based) and returns it, so it can be
+    sold. *)
+val remove_joker : int -> t -> (Joker.t * t, error) result
 
 (** Played and discarded cards, most recent first. *)
 val discarded : t -> Card.t list

@@ -1,3 +1,10 @@
 (tests
- (names test_blind test_board test_hand test_money test_planet test_play)
+ (names
+  test_blind
+  test_board
+  test_hand
+  test_joker
+  test_money
+  test_planet
+  test_play)
  (libraries balatro))

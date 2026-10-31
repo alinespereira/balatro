@@ -4,6 +4,8 @@ type error =
   | InvalidIndex of int
   | DuplicateIndex of int
   | InvalidPlay of Poker.Hand.error
+  | NoJokerSlot
+  | NoJokerAt of int
 [@@deriving show]
 
 type t = {
@@ -25,6 +27,32 @@ let ( let* ) = Result.bind
 let deck { deck; _ } = deck
 let hand { hand; _ } = hand
 let discarded { discarded; _ } = discarded
+let jokers { jokers; _ } = List.rev jokers
+
+let add_joker joker board =
+  let { jokers; joker_slots; _ } = board in
+  if List.length jokers < joker_slots then
+    Ok { board with jokers = joker :: jokers }
+  else
+    Error NoJokerSlot
+;;
+
+let remove_joker idx board =
+  let the_jokers = jokers board in
+  if idx < 0 then
+    Error (NoJokerAt idx)
+  else (
+    match List.nth_opt the_jokers idx with
+    | Some joker ->
+      Ok
+        ( joker,
+          {
+            board with
+            jokers = List.filteri (fun i _ -> i <> idx) the_jokers |> List.rev;
+          } )
+    | None -> Error (NoJokerAt idx)
+  )
+;;
 
 let create rng color =
   let deck = Deck.create color |> Deck.shuffle rng in

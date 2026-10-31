@@ -24,7 +24,8 @@ type error =
 (** Padrão: 4 jogadas, 3 descartes. *)
 val create : ?plays:int -> ?discards:int -> target:int -> Board.t -> t
 
-(** Joga as cartas dos índices; devolve a jogada, os pontos dela e a rodada nova. *)
+(** Joga as cartas dos índices; devolve a jogada, os pontos dela e a rodada nova. Os
+    jokers do board entram na pontuação, da esquerda para a direita. *)
 val play : Poker.Levels.t -> int list -> t -> (Play.t * int * t, error) result
 
 val discard : int list -> t -> (t, error) result

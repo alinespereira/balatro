@@ -41,6 +41,41 @@ let hand cards =
   String.concat "\n" [indices_row; divider_row; cards_row]
 ;;
 
+let joker_name = function
+  | Joker.Joker -> "Coringa"
+  | GreedyJoker -> "Coringa Ganancioso"
+  | LustyJoker -> "Coringa Luxurioso"
+  | WrathfulJoker -> "Coringa Irado"
+  | GluttonousJoker -> "Coringa Guloso"
+  | JollyJoker -> "Coringa Alegre"
+  | HalfJoker -> "Meio Coringa"
+  | Banner -> "Estandarte"
+  | AbstractJoker -> "Coringa Abstrato"
+  | Cavendish -> "Cavendish"
+;;
+
+let joker_description = function
+  | Joker.Joker -> "+4 mult"
+  | GreedyJoker -> "+3 mult por carta de ♦ que pontua"
+  | LustyJoker -> "+3 mult por carta de ♥ que pontua"
+  | WrathfulJoker -> "+3 mult por carta de ♠ que pontua"
+  | GluttonousJoker -> "+3 mult por carta de ♣ que pontua"
+  | JollyJoker -> "+8 mult se a mão for um par"
+  | HalfJoker -> "+20 mult se jogar 3 cartas ou menos"
+  | Banner -> "+30 fichas por descarte restante"
+  | AbstractJoker -> "+3 mult por joker que você tem"
+  | Cavendish -> "x3 mult"
+;;
+
+let jokers = function
+  | [] -> ""
+  | jokers ->
+    jokers
+    |> List.mapi (fun i joker ->
+      Printf.sprintf "  %d. %s: %s" (i + 1) (joker_name joker) (joker_description joker))
+    |> String.concat "\n"
+;;
+
 let status run =
   let { Run.ante; Run.stage; Run.blind; Run.money; _ } = run in
   let { Blind.target; Blind.plays_left; Blind.discards_left; Blind.chips; _ } = blind in
@@ -98,6 +133,8 @@ let board_error : Board.error -> string = function
   | DuplicateIndex i -> Printf.sprintf "A posição %d foi escolhida mais de uma vez" (i + 1)
   | InvalidPlay (Poker.Hand.InvalidCardCount n) ->
     Printf.sprintf "Uma jogada precisa de 1 a 5 cartas, mas tem %d" n
+  | NoJokerSlot -> "Não há espaço para mais jokers"
+  | NoJokerAt i -> Printf.sprintf "Não há joker na posição %d" (i + 1)
 ;;
 
 let blind_error : Blind.error -> string = function

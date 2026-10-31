@@ -1,8 +1,15 @@
-type t = Poker.Hand.evaluation
+type t = {
+  evaluation: Poker.Hand.evaluation;
+  cards: Card.t list;
+}
 
-let make = Poker.Hand.evaluate
-let hand (play : t) = play.category
-let scoring_cards (play : t) = play.scoring_cards
+let make cards =
+  Poker.Hand.evaluate cards |> Result.map (fun evaluation -> { evaluation; cards })
+;;
+
+let hand { evaluation; _ } = evaluation.category
+let scoring_cards { evaluation; _ } = evaluation.scoring_cards
+let cards { cards; _ } = cards
 
 let card_chips (card : Card.t) =
   match card.rank with
