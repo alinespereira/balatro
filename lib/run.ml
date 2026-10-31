@@ -191,29 +191,26 @@ let buy idx run =
   | Playing -> Error NotInShop
   | Shopping { shop; board } ->
     let* item, new_shop = Shop.take idx shop |> Result.map_error (fun e -> ShopError e) in
-    if Shop.price item > the_money then
-      Error (NotEnoughMoney (Shop.price item))
-    else (
-      match item with
-      | Shop.JokerItem joker ->
-        let* new_board =
-          Board.add_joker joker board |> Result.map_error (fun e -> BoardError e)
-        in
-        Ok
-          {
-            run with
-            money = the_money - Shop.price item;
-            phase = Shopping { shop = new_shop; board = new_board };
-          }
-      | Shop.PlanetItem planet ->
-        let new_run = use_planet planet run in
-        Ok
-          {
-            new_run with
-            money = the_money - Shop.price item;
-            phase = Shopping { shop = new_shop; board };
-          }
-    )
+    let item_price = Shop.price item in
+    if item_price > the_money then
+      Error (NotEnoughMoney item_price)
+    else
+      let* new_run, new_board =
+        match item with
+        | Shop.JokerItem joker ->
+          Board.add_joker joker board
+          |> Result.map (fun new_board -> run, new_board)
+          |> Result.map_error (fun e -> BoardError e)
+        | Shop.PlanetItem planet ->
+          let new_run = use_planet planet run in
+          Ok (new_run, board)
+      in
+      Ok
+        {
+          new_run with
+          money = the_money - item_price;
+          phase = Shopping { shop = new_shop; board = new_board };
+        }
 ;;
 
 (* TODO: [NotInShop] while playing. Remove the joker from the shop's board with
