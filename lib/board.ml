@@ -29,11 +29,27 @@ let hand { hand; _ } = hand
 let discarded { discarded; _ } = discarded
 let jokers { jokers; _ } = jokers
 
-(* TODO: [NoJokerSlot] when [joker_slots] are all taken. *)
-let add_joker _ _ = failwith "Board.add_joker: not implemented"
+let add_joker joker board =
+  let { jokers; joker_slots; _ } = board in
+  if List.length jokers < joker_slots then
+    Ok { board with jokers = joker :: jokers }
+  else
+    Error NoJokerSlot
+;;
 
-(* TODO: [NoJokerAt] when the position is out of range. *)
-let remove_joker _ _ = failwith "Board.remove_joker: not implemented"
+let remove_joker idx board =
+  let { jokers; _ } = board in
+  let indexed_jokers = jokers |> List.mapi (fun i j -> i, j) in
+  match List.assoc_opt idx indexed_jokers with
+  | Some joker ->
+    Ok
+      ( joker,
+        {
+          board with
+          jokers = indexed_jokers |> List.remove_assoc idx |> List.split |> snd;
+        } )
+  | None -> Error (NoJokerAt (idx + 1))
+;;
 
 let create rng color =
   let deck = Deck.create color |> Deck.shuffle rng in
