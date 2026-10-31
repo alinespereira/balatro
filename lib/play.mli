@@ -1,6 +1,9 @@
-(** A valid play: the hand the cards make and the cards that score. The type is abstract
+(** A valid play: the hand the cards make and the played cards. The type is private
     so the only way to get one is [make], which means every [t] is a valid play. *)
-type t
+type t = private {
+  evaluation: Poker.Hand.evaluation;
+  cards: Card.t list;
+}
 
 val make : Card.t list -> (t, Poker.Hand.error) result
 val hand : t -> Poker.Hand.t
