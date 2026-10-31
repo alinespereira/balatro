@@ -48,7 +48,7 @@ let cost = function
     5
 ;;
 
-let sell_value joker = max 1 (cost joker)
+let sell_value joker = max 1 (cost joker / 2)
 
 type context = {
   play: Play.t;
