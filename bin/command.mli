@@ -10,6 +10,7 @@ type error =
   | Empty (** The line had nothing but spaces. *)
   | UnknownCommand of string (** The first word is not a command. *)
   | NotAnIndex of string (** A word after the command is not a number. *)
+  | ArgsProvided of string * string list (** Args were provided but not expected. *)
 
 (** Parses one line typed by the player. Positions are typed 1-based, as the hand is
     shown on screen, and come back 0-based, as [Run.play] and [Run.discard] expect. *)

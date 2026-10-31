@@ -8,6 +8,7 @@ type error =
   | Empty
   | UnknownCommand of string
   | NotAnIndex of string
+  | ArgsProvided of string * string list
 
 let ( let* ) = Result.bind
 
@@ -34,8 +35,9 @@ let parse line =
   | [] -> Error Empty
   | "p" :: args -> Result.map (fun idx -> Play idx) (indices args)
   | "d" :: args -> Result.map (fun idx -> Discard idx) (indices args)
-  | "h" :: _ -> Ok Help
-  | "q" :: _ -> Ok Quit
+  | [("h" | "?")] -> Ok Help
+  | ["q"] -> Ok Quit
+  | (("h" | "?" | "q") as cmd) :: args -> Error (ArgsProvided (cmd, args))
   | cmd :: _ -> Error (UnknownCommand cmd)
 ;;
 
@@ -43,6 +45,11 @@ let error_message = function
   | Empty -> "Por favor, informe um comando"
   | UnknownCommand cmd -> Printf.sprintf "Comando inválido: '%s'" cmd
   | NotAnIndex idx -> Printf.sprintf "Não é uma posição válida: '%s'" idx
+  | ArgsProvided (cmd, args) ->
+    Printf.sprintf
+      "Comando '%s' não aceita argumentos, mas recebeu '%s'"
+      cmd
+      (String.concat " " args)
 ;;
 
 let help =
