@@ -17,6 +17,13 @@ val joker_description : Balatro.Joker.t -> string
     when there are none. *)
 val jokers : Balatro.Joker.t list -> string
 
+(** The name of a planet, in Portuguese. *)
+val planet_name : Balatro.Consumables.Planet.t -> string
+
+(** The shop's offers, each under its 1-based position with its price, and the cost of
+    the next reroll. *)
+val shop : Balatro.Shop.t -> string
+
 (** Ante, stage, chips against the target, the plays and discards left, and the money. *)
 val status : Balatro.Run.t -> string
 
@@ -26,5 +33,5 @@ val play : Balatro.Play.t -> int -> string
 (** What a beaten blind paid, part by part, and the total. *)
 val payout : Balatro.Payout.t -> string
 
-(** A message for an error returned by [Run.play], [Run.discard] or [Run.next_blind]. *)
+(** A message for an error returned by any function of [Run]. *)
 val error : Balatro.Run.error -> string

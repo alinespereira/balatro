@@ -1,6 +1,10 @@
 type t =
   | Play of int list
   | Discard of int list
+  | Buy of int
+  | Sell of int
+  | Reroll
+  | Leave
   | Help
   | Quit
 
@@ -9,6 +13,7 @@ type error =
   | UnknownCommand of string
   | NotAnIndex of string
   | ArgsProvided of string * string list
+  | ExpectedOneIndex of string
 
 let ( let* ) = Result.bind
 
@@ -35,9 +40,14 @@ let parse line =
   | [] -> Error Empty
   | "p" :: args -> Result.map (fun idx -> Play idx) (indices args)
   | "d" :: args -> Result.map (fun idx -> Discard idx) (indices args)
+  | ["c"; arg] -> Result.map (fun idx -> Buy idx) (to_index arg)
+  | ["v"; arg] -> Result.map (fun idx -> Sell idx) (to_index arg)
+  | (("c" | "v") as cmd) :: _ -> Error (ExpectedOneIndex cmd)
+  | ["r"] -> Ok Reroll
+  | ["s"] -> Ok Leave
   | [("h" | "?")] -> Ok Help
   | ["q"] -> Ok Quit
-  | (("h" | "?" | "q") as cmd) :: args -> Error (ArgsProvided (cmd, args))
+  | (("r" | "s" | "h" | "?" | "q") as cmd) :: args -> Error (ArgsProvided (cmd, args))
   | cmd :: _ -> Error (UnknownCommand cmd)
 ;;
 
@@ -50,6 +60,8 @@ let error_message = function
       "Comando '%s' não aceita argumentos, mas recebeu '%s'"
       cmd
       (String.concat " " args)
+  | ExpectedOneIndex cmd ->
+    Printf.sprintf "O comando '%s' precisa de exatamente uma posição" cmd
 ;;
 
 let help =
@@ -58,5 +70,11 @@ let help =
   d 2 4     descarta as cartas nas posições 2 e 4
   h         mostra esta ajuda
   ?         mostra esta ajuda
-  q         sai do jogo|}
+  q         sai do jogo
+
+Na loja:
+  c 1       compra a oferta na posição 1
+  v 2       vende o joker na posição 2
+  r         troca as ofertas (rerrolar)
+  s         sai da loja e vai para o próximo blind|}
 ;;

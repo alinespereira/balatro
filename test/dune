@@ -6,5 +6,6 @@
   test_joker
   test_money
   test_planet
-  test_play)
+  test_play
+  test_shop)
  (libraries balatro))

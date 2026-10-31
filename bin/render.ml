@@ -76,6 +76,47 @@ let jokers = function
     |> String.concat "\n"
 ;;
 
+let planet_name = function
+  | Consumables.Planet.Pluto -> "Plutão"
+  | Mercury -> "Mercúrio"
+  | Uranus -> "Urano"
+  | Venus -> "Vênus"
+  | Saturn -> "Saturno"
+  | Jupiter -> "Júpiter"
+  | Earth -> "Terra"
+  | Mars -> "Marte"
+  | Neptune -> "Netuno"
+  | PlanetX -> "Planeta X"
+  | Ceres -> "Ceres"
+  | Eris -> "Éris"
+;;
+
+(* The hands a planet levels up: Neptune is the only one with two. *)
+let planet_hands planet =
+  Poker.Hand.all
+  |> List.filter (fun hand -> Poker.Hand.planet hand = planet)
+  |> List.map Poker.Hand.show
+  |> String.concat " e "
+;;
+
+let item = function
+  | Shop.JokerItem joker ->
+    Printf.sprintf "%s: %s" (joker_name joker) (joker_description joker)
+  | PlanetItem planet ->
+    Printf.sprintf "%s: sobe o nível de %s" (planet_name planet) (planet_hands planet)
+;;
+
+let shop (the_shop : Shop.t) =
+  let offers =
+    the_shop.offers
+    |> List.mapi (fun i offer ->
+      Printf.sprintf "  %d. $%d  %s" (i + 1) (Shop.price offer) (item offer))
+  in
+  String.concat
+    "\n"
+    (("Loja:" :: offers) @ [Printf.sprintf "  Rerrolar: $%d" the_shop.reroll_cost])
+;;
+
 let status run =
   let { Run.ante; Run.stage; Run.blind; Run.money; _ } = run in
   let { Blind.target; Blind.plays_left; Blind.discards_left; Blind.chips; _ } = blind in
@@ -148,4 +189,9 @@ let error : Run.error -> string = function
   | Run.BlindError e -> blind_error e
   | BlindNotOver -> "A rodada ainda não terminou"
   | RunOver -> "A partida já terminou"
+  | InShop -> "Você está na loja: compre, venda, rerrole ou saia com 's'"
+  | NotInShop -> "Esse comando só funciona na loja"
+  | NotEnoughMoney price -> Printf.sprintf "Dinheiro insuficiente: custa $%d" price
+  | ShopError (Shop.NoOfferAt i) -> Printf.sprintf "Não há oferta na posição %d" (i + 1)
+  | BoardError e -> board_error e
 ;;
