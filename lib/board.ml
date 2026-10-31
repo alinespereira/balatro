@@ -8,6 +8,8 @@ type error =
   | NoJokerAt of int
 [@@deriving show]
 
+(* TODO: [jokers] is stored most recent first (the last joker added is the head), so
+   [add_joker] can use [::]. Only [jokers] and [remove_joker] may rely on that. *)
 type t = {
   deck: Deck.t;
   hand: Card.t list;
@@ -27,6 +29,8 @@ let ( let* ) = Result.bind
 let deck { deck; _ } = deck
 let hand { hand; _ } = hand
 let discarded { discarded; _ } = discarded
+(* TODO: the field is most recent first, but [Board.jokers] promises left to right
+   (scoring order), so reverse it here. *)
 let jokers { jokers; _ } = jokers
 
 let add_joker joker board =
@@ -37,6 +41,9 @@ let add_joker joker board =
     Error NoJokerSlot
 ;;
 
+(* TODO: [idx] is a position from the left, as the player sees it with [Board.jokers],
+   but the field is most recent first. Convert it before looking it up:
+   [List.length jokers - 1 - idx]. The error keeps the original [idx]. *)
 let remove_joker idx board =
   let { jokers; _ } = board in
   match List.nth_opt jokers idx with
