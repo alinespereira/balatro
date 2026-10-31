@@ -92,7 +92,7 @@ let changes ctx joker =
     [Score.AddMult (3.0 *. float_of_int scoring_clubs)]
   | HalfJoker ->
     let { play; _ } = ctx in
-    let n = play |> Play.scoring_cards |> List.length in
+    let n = play |> Play.cards |> List.length in
     if n <= 3 then
       [Score.AddMult 20.0]
     else
