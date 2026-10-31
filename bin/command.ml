@@ -46,9 +46,9 @@ let error_message = function
 ;;
 
 let help =
-  {|Commands:
-  p 1 3 5   play the cards at positions 1, 3 and 5
-  d 2 4     discard the cards at positions 2 and 4
-  h         show this help
-  q         quit|}
+  {|Comandos:
+  p 1 3 5   joga as cartas nas posições 1, 3 e 5
+  d 2 4     descarta as cartas nas posições 2 e 4
+  h         mostra esta ajuda
+  q         sai do jogo|}
 ;;
