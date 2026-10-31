@@ -1,14 +1,16 @@
 open Balatro
 
-let wait = Unix.sleepf 1.5
+let wait () = Unix.sleepf 1.5
 
-let clear_screen =
+let clear_screen () =
   print_string "\027[2J\027[H";
   flush stdout
 ;;
 
-let rec loop rng (run : Run.t) : unit =
-  clear_screen;
+let rec loop ?(help = false) rng (run : Run.t) : unit =
+  wait ();
+  clear_screen ();
+  if help then print_endline Command.help;
   print_endline (Render.status run);
   print_endline (run |> Run.blind |> Blind.board |> Board.hand |> Render.hand);
   print_string "> ";
@@ -19,7 +21,6 @@ let rec loop rng (run : Run.t) : unit =
     (match Command.parse line with
      | Error e ->
        print_endline (Command.error_message e);
-       wait;
        loop rng run
      | Ok Command.Help ->
        print_endline Command.help;
@@ -29,7 +30,6 @@ let rec loop rng (run : Run.t) : unit =
        (match Run.play indices run with
         | Error e ->
           print_endline (Render.error e);
-          wait;
           loop rng run
         | Ok (play, points, new_run) ->
           print_endline (Render.play play points);
@@ -38,7 +38,6 @@ let rec loop rng (run : Run.t) : unit =
              (match Run.next_blind rng new_run with
               | Ok next ->
                 print_endline "Blind vencido!";
-                wait;
                 loop rng next
               | Error e -> print_endline (Render.error e))
            | InProgress -> loop rng new_run
@@ -48,7 +47,6 @@ let rec loop rng (run : Run.t) : unit =
        (match Run.discard indices run with
         | Error e ->
           print_endline (Render.error e);
-          wait;
           loop rng run
         | Ok new_run -> loop rng new_run))
 ;;
@@ -56,6 +54,6 @@ let rec loop rng (run : Run.t) : unit =
 let () =
   let rng = Random.State.make_self_init () in
   let run = Run.create rng Deck.Red in
-  print_endline Command.help;
-  loop rng run
+
+  loop rng run ~help:true
 ;;
