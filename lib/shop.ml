@@ -23,12 +23,25 @@ let all_items =
   @ List.map (fun planet -> PlanetItem planet) Consumables.Planet.all
 ;;
 
-(* TODO: draw [offer_count] items from [all_items] without repeats. [Util.draw] returns
-   the item drawn and the list without it. *)
-let create _ = failwith "Shop.create: not implemented"
+let create rng =
+  let offers = all_items |> Util.shuffle rng |> List.take offer_count in
+  { offers; reroll_cost = base_reroll_cost }
+;;
 
-(* TODO: [NoOfferAt] for a position out of range, as in [Board.remove_joker]. *)
-let take _ _ = failwith "Shop.take: not implemented"
+let take idx shop =
+  let { offers; _ } = shop in
+  if idx < 0 || idx >= List.length offers then
+    Error (NoOfferAt idx)
+  else (
+    match List.nth_opt offers idx with
+    | Some offer ->
+      Ok (offer, { shop with offers = List.filteri (fun i _ -> i <> idx) offers })
+    | None -> Error (NoOfferAt idx)
+  )
+;;
 
-(* TODO: new offers like [create], and [reroll_cost + 1]. *)
-let reroll _ _ = failwith "Shop.reroll: not implemented"
+let reroll rng shop =
+  let new_offers = all_items |> Util.shuffle rng |> List.take offer_count in
+  let { reroll_cost; _ } = shop in
+  { offers = new_offers; reroll_cost = reroll_cost + 1 }
+;;
