@@ -16,7 +16,7 @@ type t =
   | LustyJoker (** +3 mult for every scoring heart. *)
   | WrathfulJoker (** +3 mult for every scoring spade. *)
   | GluttonousJoker (** +3 mult for every scoring club. *)
-  | JollyJoker (** +8 mult if the hand is a [Pair]. *)
+  | JollyJoker (** +8 mult if the hand contains a pair ([Poker.Hand.contains_pair]). *)
   | HalfJoker (** +20 mult if 3 or fewer cards were played. *)
   | Banner (** +30 chips for every discard left. *)
   | AbstractJoker (** +3 mult for every joker owned. *)

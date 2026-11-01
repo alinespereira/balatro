@@ -167,6 +167,8 @@ let status run =
     [
       Printf.sprintf "Ante: %d" ante;
       Printf.sprintf "Rodada: %s" (stage current);
+      (* TODO: "Chefe do ante: ..." during the Small and Big blinds, when the boss is
+         only a preview, and "Chefe: ..." during the Boss blind. *)
       Printf.sprintf "Chefe: %s (%s)" (boss_name boss) (boss_description boss);
       Printf.sprintf "Meta: %d" target;
       "";

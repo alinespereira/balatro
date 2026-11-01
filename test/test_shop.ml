@@ -57,6 +57,55 @@ let test_reroll () =
   Alcotest.(check int) "second reroll" (Shop.base_reroll_cost + 2) twice.Shop.reroll_cost
 ;;
 
+let joker j = Shop.JokerItem j
+let planet p = Shop.PlanetItem p
+let secret_planets = Consumables.Planet.[PlanetX; Ceres; Eris]
+
+let check_offered name expected wanted items =
+  Alcotest.(check bool) name expected (List.mem wanted items)
+;;
+
+let test_available () =
+  let levels = Poker.Levels.initial in
+  let fresh = Shop.available ~jokers:[] ~levels in
+  List.iter (fun j -> check_offered (Joker.show j) true (joker j) fresh) Joker.all;
+  check_offered "pluto" true (planet Consumables.Planet.Pluto) fresh;
+  check_offered "neptune" true (planet Consumables.Planet.Neptune) fresh;
+  (* No secret hand was played yet, so their planets stay hidden. *)
+  List.iter
+    (fun p -> check_offered (Consumables.Planet.show p) false (planet p) fresh)
+    secret_planets;
+  Alcotest.(check int)
+    "every joker and 9 planets"
+    (List.length Joker.all + 9)
+    (List.length fresh);
+  (* The jokers already owned are not offered again. *)
+  let owned = Shop.available ~jokers:Joker.[Banner; Joker] ~levels in
+  check_offered "banner is owned" false (joker Joker.Banner) owned;
+  check_offered "joker is owned" false (joker Joker.Joker) owned;
+  check_offered "cavendish is not" true (joker Joker.Cavendish) owned;
+  (* After a flush five, Eris shows up; the other secret planets stay hidden. *)
+  let levels = Poker.Levels.record_play Poker.Hand.FlushFive levels in
+  let after = Shop.available ~jokers:[] ~levels in
+  check_offered "eris" true (planet Consumables.Planet.Eris) after;
+  check_offered "planet x" false (planet Consumables.Planet.PlanetX) after;
+  check_offered "ceres" false (planet Consumables.Planet.Ceres) after
+;;
+
+let test_create_from () =
+  let from = [joker Joker.Banner; joker Joker.Joker; planet Consumables.Planet.Pluto] in
+  List.init 20 (fun seed -> Random.State.make [| seed |])
+  |> List.iter (fun rng ->
+    let shop = Shop.create ~from rng in
+    let rerolled = Shop.reroll ~from rng shop in
+    List.iter
+      (fun offer -> check_offered (Shop.show_item offer) true offer from)
+      (shop.Shop.offers @ rerolled.Shop.offers));
+  (* Fewer items than [offer_count]: the shop offers what there is. *)
+  let shop = Shop.create ~from:[joker Joker.Banner] (rng ()) in
+  Alcotest.(check (list item)) "only one item" [joker Joker.Banner] shop.Shop.offers
+;;
+
 (* A fresh run is playing its first blind: the shop commands are refused, and there is
    nothing to cash out yet. *)
 let test_run_outside_shop () =
@@ -83,6 +132,8 @@ let () =
           Alcotest.test_case "create" `Quick test_create;
           Alcotest.test_case "take" `Quick test_take;
           Alcotest.test_case "reroll" `Quick test_reroll;
+          Alcotest.test_case "available" `Quick test_available;
+          Alcotest.test_case "create from" `Quick test_create_from;
         ] );
       "run", [Alcotest.test_case "outside the shop" `Quick test_run_outside_shop];
     ]

@@ -66,6 +66,30 @@ let test_neptune () =
   Alcotest.(check int) "royal flush" 2 (level Poker.Hand.RoyalFlush levels)
 ;;
 
+let played hand levels = (Poker.Levels.get hand levels).played
+
+let test_record_play () =
+  List.iter
+    (fun hand ->
+       Alcotest.(check int)
+         (Poker.Hand.show hand ^ " never played")
+         0
+         (played hand Poker.Levels.initial))
+    Poker.Hand.all;
+  let levels =
+    Poker.Levels.initial
+    |> Poker.Levels.record_play Poker.Hand.Pair
+    |> Poker.Levels.record_play Poker.Hand.Pair
+  in
+  Alcotest.(check int) "pair played twice" 2 (played Poker.Hand.Pair levels);
+  Alcotest.(check int) "flush never played" 0 (played Poker.Hand.Flush levels);
+  (* Playing a hand does not level it up. *)
+  Alcotest.(check int) "pair still at level 1" 1 (level Poker.Hand.Pair levels);
+  (* And a planet keeps the count. *)
+  let levels = Poker.Levels.use_planet Planet.Mercury levels in
+  Alcotest.(check int) "count after a planet" 2 (played Poker.Hand.Pair levels)
+;;
+
 let test_times_mult () =
   Alcotest.check
     score
@@ -83,6 +107,7 @@ let () =
         [
           Alcotest.test_case "level up" `Quick test_level_up;
           Alcotest.test_case "neptune" `Quick test_neptune;
+          Alcotest.test_case "record play" `Quick test_record_play;
           Alcotest.test_case "times mult" `Quick test_times_mult;
         ] );
     ]

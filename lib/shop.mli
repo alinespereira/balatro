@@ -26,14 +26,23 @@ val price : item -> int
 (** Every item the shop can offer: each joker and each planet once. *)
 val all_items : item list
 
-(** A shop with [offer_count] offers drawn from [all_items], without repeats, and the
-    reroll at [base_reroll_cost]. *)
-val create : Random.State.t -> t
+(** What the shop can offer right now: every item of [all_items] except
+
+    - the jokers in [jokers], the ones already owned: no joker shows up twice;
+    - the planets of the secret hands ([Poker.Hand.is_secret]) that were never played,
+      according to [levels]. *)
+val available : jokers:Joker.t list -> levels:Poker.Levels.t -> item list
+
+(** A shop with [offer_count] offers drawn from [from] (by default, [all_items]),
+    without repeats, and the reroll at [base_reroll_cost]. If [from] has fewer items
+    than [offer_count], the shop offers all of them. *)
+val create : ?from:item list -> Random.State.t -> t
 
 (** Takes the offer at the given position out of the shop and returns it. Paying for it
     is up to the caller. *)
 val take : int -> t -> (item * t, error) result
 
-(** Replaces the offers with [offer_count] new ones and raises the reroll cost by $1.
-    Paying for it is up to the caller, with the cost from before the reroll. *)
-val reroll : Random.State.t -> t -> t
+(** Replaces the offers with [offer_count] new ones drawn from [from], like [create],
+    and raises the reroll cost by $1. Paying for it is up to the caller, with the cost
+    from before the reroll. *)
+val reroll : ?from:item list -> Random.State.t -> t -> t

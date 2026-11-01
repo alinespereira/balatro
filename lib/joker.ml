@@ -68,6 +68,8 @@ let changes ctx joker =
   match joker with
   | Joker -> [Score.AddMult 4.0]
   | JollyJoker ->
+    (* TODO: use [Poker.Hand.contains_pair], so two pair, three of a kind and the
+       others count too. *)
     let { Play.evaluation; _ } = play in
     let { Poker.Hand.category; _ } = evaluation in
     if category = Poker.Hand.Pair then
