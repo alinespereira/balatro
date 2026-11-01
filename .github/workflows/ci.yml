@@ -23,6 +23,18 @@ jobs:
         with:
           ocaml-compiler: "5.4.1"
 
+      # setup-ocaml already caches the compiler, but not the packages we
+      # install on top of it. Caching the local switch (_opam) saves ~1.5 min:
+      # on a hit, the two opam install steps below find everything already
+      # installed and finish in seconds. The key changes whenever the .opam
+      # file (our dependency list) or the ocamlformat version changes, which
+      # makes the next run rebuild the cache.
+      - name: Cache opam packages
+        uses: actions/cache@v4
+        with:
+          path: _opam
+          key: opam-ci-${{ runner.os }}-5.4.1-ocamlformat-0.29.0-${{ hashFiles('*.opam') }}
+
       - name: Install dependencies
         run: opam install . --deps-only --with-test --yes
 

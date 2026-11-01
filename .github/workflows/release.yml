@@ -82,6 +82,15 @@ jobs:
         with:
           ocaml-compiler: "5.4.1"
 
+      # Same idea as in ci.yml: keep the installed opam packages between
+      # runs, so only the first release after a dependency change pays for
+      # installing them (several minutes on Windows).
+      - name: Cache opam packages
+        uses: actions/cache@v4
+        with:
+          path: _opam
+          key: opam-release-${{ runner.os }}-5.4.1-${{ hashFiles('*.opam') }}
+
       - name: Install dependencies
         run: opam install . --deps-only --yes
 
