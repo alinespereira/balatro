@@ -2,9 +2,24 @@ name: Release
 
 # Runs when a version tag is pushed, e.g.:
 #   git tag v0.1.0 && git push origin v0.1.0
+#
+# It can also be started by hand for a tag that already exists (Actions tab →
+# Release → "Run workflow"), e.g. to add new executables to an old release:
+#   gh workflow run release.yml -f tag=v0.1.0
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and release (e.g. v0.1.0)"
+        required: true
+        type: string
+
+# The tag being released: the input when started by hand, otherwise the
+# pushed tag.
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   create-release:
@@ -17,7 +32,6 @@ jobs:
       - name: Create GitHub release for the tag
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
         # Skip creation if the release already exists (e.g. it was created
         # from the GitHub web UI, which also pushes the tag).
         run: |
@@ -58,6 +72,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          # Build the code at the tag, even when the workflow was started by
+          # hand from main.
+          ref: ${{ env.TAG }}
 
       - name: Set up OCaml
         uses: ocaml/setup-ocaml@v3
@@ -74,7 +92,6 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
           SUFFIX: ${{ matrix.suffix }}
         # dune names the binary main.exe on every system; the extension only
         # matters on Windows, so the Linux/macOS assets drop it.
