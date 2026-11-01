@@ -40,7 +40,11 @@ let to_index arg =
 let parse line =
   let parsed =
     line
-    |> String.map (fun c -> if c = '\t' then ' ' else c)
+    |> String.map (fun c ->
+      if c = '\t' then
+        ' '
+      else
+        c)
     |> String.split_on_char ' '
     |> List.filter (fun w -> w <> "")
   in

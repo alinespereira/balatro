@@ -1,6 +1,11 @@
 open Balatro_cli
 
-let parsed = Alcotest.(result (testable Command.pp Command.equal) (testable Command.pp_error Command.equal_error))
+let parsed =
+  Alcotest.(
+    result
+      (testable Command.pp Command.equal)
+      (testable Command.pp_error Command.equal_error))
+;;
 
 (* One row per line typed by the player: the line and what [parse] should return. *)
 let cases : (string * (Command.t, Command.error) result) list =
@@ -73,7 +78,9 @@ let () =
       ( "command",
         [
           Alcotest.test_case "parse" `Quick test_parse;
-          Alcotest.test_case "help mentions every command" `Quick
+          Alcotest.test_case
+            "help mentions every command"
+            `Quick
             test_help_mentions_every_command;
           Alcotest.test_case "error message" `Quick test_error_message;
         ] );

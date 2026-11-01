@@ -15,8 +15,7 @@ let screen (run : Run.t) =
   match Run.phase run with
   | Run.Playing ->
     [Render.status run; jokers; run |> Run.board |> Board.hand |> Render.hand]
-  | Shopping { shop; _ } ->
-    [Render.money (Run.money run); jokers; Render.shop shop]
+  | Shopping { shop; _ } -> [Render.money (Run.money run); jokers; Render.shop shop]
 ;;
 
 let rec loop ?(help = false) rng (run : Run.t) : unit =
