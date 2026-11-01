@@ -16,7 +16,52 @@ type t =
   | Banner
   | AbstractJoker
   | Cavendish
-[@@deriving show, eq, enumerate]
+  | GreenJoker of { mult: int }
+  | RideTheBus of { mult: int }
+  | Runner of { chips: int }
+  | IceCream of { chips: int }
+[@@deriving show, eq]
+
+let all =
+  [
+    Joker;
+    GreedyJoker;
+    LustyJoker;
+    WrathfulJoker;
+    GluttonousJoker;
+    JollyJoker;
+    HalfJoker;
+    Banner;
+    AbstractJoker;
+    Cavendish;
+    GreenJoker { mult = 0 };
+    RideTheBus { mult = 0 };
+    Runner { chips = 0 };
+    IceCream { chips = 100 };
+  ]
+;;
+
+let fresh = function
+  | GreenJoker _ -> GreenJoker { mult = 0 }
+  | RideTheBus _ -> RideTheBus { mult = 0 }
+  | Runner _ -> Runner { chips = 0 }
+  | IceCream _ -> IceCream { chips = 100 }
+  | ( Joker
+    | GreedyJoker
+    | LustyJoker
+    | WrathfulJoker
+    | GluttonousJoker
+    | JollyJoker
+    | HalfJoker
+    | Banner
+    | AbstractJoker
+    | Cavendish ) as joker ->
+    joker
+;;
+
+(* TODO(Aline): two jokers are the same kind when they are equal once their state is
+   put back to the start. [fresh] already does that part. *)
+let same_kind _a _b = failwith "TODO: Joker.same_kind"
 
 (* All the jokers so far are common in Balatro. *)
 let rarity = function
@@ -29,7 +74,11 @@ let rarity = function
   | HalfJoker
   | Banner
   | AbstractJoker
-  | Cavendish ->
+  | Cavendish
+  | GreenJoker _
+  | RideTheBus _
+  | Runner _
+  | IceCream _ ->
     Common
 ;;
 
@@ -37,15 +86,19 @@ let cost = function
   | Joker -> 2
   | JollyJoker -> 3
   | AbstractJoker
-  | Cavendish ->
+  | Cavendish
+  | GreenJoker _ ->
     4
   | GreedyJoker
   | LustyJoker
   | WrathfulJoker
   | GluttonousJoker
   | HalfJoker
-  | Banner ->
+  | Banner
+  | Runner _
+  | IceCream _ ->
     5
+  | RideTheBus _ -> 6
 ;;
 
 let sell_value joker = max 1 (cost joker / 2)
@@ -100,6 +153,29 @@ let changes ctx joker =
   | Banner ->
     let { discards_left; _ } = ctx in
     [Score.AddChips (30 * discards_left)]
+  (* TODO(Aline): the jokers with state score what their payload says. Remember that
+     [Score.AddMult] takes a float: [float_of_int]. *)
+  | GreenJoker _
+  | RideTheBus _
+  | Runner _
+  | IceCream _ ->
+    failwith "TODO: Joker.changes for the jokers with state"
 ;;
 
 let all_changes ctx = ctx.jokers |> List.concat_map (changes ctx)
+
+type event =
+  | Played of Play.t
+  | Discarded
+
+(* TODO(Aline): one [match] on the event and the joker, returning the joker with its
+   new state ([Some (GreenJoker { mult = mult + 1 })]), or [None] when it goes away.
+   - GreenJoker: +1 per [Played], -1 per [Discarded], never below 0 ([max]).
+   - RideTheBus: on [Played], back to 0 if a scoring card ([Play.scoring_cards]) is a
+     Jack, Queen or King, +1 otherwise. A discard does not change it.
+   - Runner: +15 on [Played] when the hand contains a straight: [Straight],
+     [StraightFlush] or [RoyalFlush] ([Play.hand]).
+   - IceCream: -5 on [Played]; at 0 or less it melts, so [None].
+   - Every other joker, and every other event: [Some joker], unchanged. A catch-all
+     [| _, joker -> Some joker] at the end is fine here. *)
+let react _event _joker = failwith "TODO: Joker.react"

@@ -10,7 +10,8 @@ val hand : Balatro.Card.t list -> string
 (** The name the player sees, in Portuguese. *)
 val joker_name : Balatro.Joker.t -> string
 
-(** What the joker does, in Portuguese. *)
+(** What the joker does, in Portuguese. For a joker with state, it starts with what
+    the joker gives now, such as ["+3 mult; ..."]. *)
 val joker_description : Balatro.Joker.t -> string
 
 (** The jokers owned, one per line under their 1-based position, or an empty string

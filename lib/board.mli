@@ -45,6 +45,11 @@ val add_joker : Joker.t -> t -> (t, error) result
     sold. *)
 val remove_joker : int -> t -> (Joker.t * t, error) result
 
+(** Applies [f] to every joker, keeping their order. The jokers for which [f] returns
+    [None] are taken out of the board. [Blind] calls it with [Joker.react] after every
+    play and discard, so jokers with state change as the blind goes. *)
+val update_jokers : (Joker.t -> Joker.t option) -> t -> t
+
 (** Played and discarded cards, most recent first. *)
 val discarded : t -> Card.t list
 

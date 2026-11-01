@@ -400,7 +400,10 @@ let test_shop_offers () =
          | Shop.PlanetItem p ->
            Alcotest.(check bool) (name ^ " is not secret") false (List.mem p secret)
          | Shop.JokerItem j ->
-           Alcotest.(check bool) (name ^ " is not owned") false (List.mem j owned))
+           Alcotest.(check bool)
+             (name ^ " is not owned")
+             false
+             (List.exists (Joker.same_kind j) owned))
       (shop_of shopping).Shop.offers;
     (* Buys the first joker it can, so later shops have jokers to leave out. *)
     let shopping =

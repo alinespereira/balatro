@@ -113,6 +113,30 @@ let test_reset color =
   Alcotest.check cards "same cards" (sorted original) (sorted deck)
 ;;
 
+(* [update_jokers] keeps the order of the jokers and drops the [None]s. *)
+let test_update_jokers color =
+  let add board joker = ok (Board.add_joker joker board) in
+  let board =
+    List.fold_left
+      add
+      (fresh_board color)
+      Joker.[Joker; IceCream { chips = 5 }; Banner; GreenJoker { mult = 0 }]
+  in
+  let grow = function
+    | Joker.GreenJoker { mult } -> Some (Joker.GreenJoker { mult = mult + 1 })
+    | Joker.IceCream _ -> None
+    | joker -> Some joker
+  in
+  Alcotest.(check (list joker))
+    "green grows, ice cream goes"
+    Joker.[Joker; Banner; GreenJoker { mult = 1 }]
+    (Board.jokers (Board.update_jokers grow board));
+  Alcotest.(check (list joker))
+    "nothing changes"
+    (Board.jokers board)
+    (Board.jokers (Board.update_jokers Option.some board))
+;;
+
 let () =
   let color_name = function
     | Deck.Red -> "red"
@@ -128,6 +152,7 @@ let () =
         "invalid selections", test_invalid_selections;
         "empty deck", test_empty_deck;
         "reset", test_reset;
+        "update jokers", test_update_jokers;
       ]
   in
   let colors = [Deck.Red; Deck.Blue; Deck.Green] in

@@ -27,7 +27,7 @@ let available ~jokers ~levels =
   all_items
   |> List.filter (fun item ->
     match item with
-    | JokerItem joker -> not (List.mem joker jokers)
+    | JokerItem joker -> not (List.exists (Joker.same_kind joker) jokers)
     | PlanetItem planet ->
       (* A planet shows up if one of its hands is not secret or was already played. *)
       Poker.Hand.all

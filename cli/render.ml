@@ -52,6 +52,10 @@ let joker_name = function
   | Banner -> "Estandarte"
   | AbstractJoker -> "Coringa Abstrato"
   | Cavendish -> "Cavendish"
+  | GreenJoker _ -> "Coringa Verde"
+  | RideTheBus _ -> "Passeio de Ônibus"
+  | Runner _ -> "Corredor"
+  | IceCream _ -> "Sorvete"
 ;;
 
 let joker_description = function
@@ -60,11 +64,18 @@ let joker_description = function
   | LustyJoker -> "+3 mult por carta de ♥ que pontua"
   | WrathfulJoker -> "+3 mult por carta de ♠ que pontua"
   | GluttonousJoker -> "+3 mult por carta de ♣ que pontua"
-  | JollyJoker -> "+8 mult se a mão for um par"
+  | JollyJoker -> "+8 mult se a mão tiver um par"
   | HalfJoker -> "+20 mult se jogar 3 cartas ou menos"
   | Banner -> "+30 fichas por descarte restante"
   | AbstractJoker -> "+3 mult por joker que você tem"
   | Cavendish -> "x3 mult"
+  | GreenJoker { mult } ->
+    Printf.sprintf "+%d mult; +1 por mão jogada, -1 por descarte" mult
+  | RideTheBus { mult } ->
+    Printf.sprintf "+%d mult; +1 por mão seguida sem figura que pontua" mult
+  | Runner { chips } -> Printf.sprintf "+%d fichas; +15 por mão com sequência" chips
+  | IceCream { chips } ->
+    Printf.sprintf "+%d fichas; -5 por mão jogada, derrete no 0" chips
 ;;
 
 let jokers = function
