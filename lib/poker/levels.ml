@@ -17,6 +17,7 @@ let initial =
 
 (* Safe: [initial] has every hand and nothing removes one. *)
 let get hand levels = HandMap.find hand levels
+let played { played; _ } = played
 
 let use_planet planet levels =
   HandMap.mapi

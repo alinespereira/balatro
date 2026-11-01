@@ -16,6 +16,8 @@ type t
 val initial : t
 
 val get : Hand.t -> t -> entry
+val played : entry -> int
+
 
 (** Levels up every hand whose planet is the given one. *)
 val use_planet : Consumables.Planet.t -> t -> t
