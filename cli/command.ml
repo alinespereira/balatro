@@ -7,6 +7,7 @@ type t =
   | Leave
   | Help
   | Quit
+[@@deriving show, eq]
 
 type error =
   | Empty
@@ -14,6 +15,7 @@ type error =
   | NotAnIndex of string
   | ArgsProvided of string * string list
   | ExpectedOneIndex of string
+[@@deriving show, eq]
 
 let ( let* ) = Result.bind
 
@@ -25,15 +27,22 @@ let rec sequence = function
     Ok (x :: xs)
 ;;
 
+(* Positions on screen start at 1, so 0 and negative numbers are rejected here instead
+   of becoming an index that [Board] would report as a missing card. *)
 let to_index arg =
   match int_of_string_opt arg with
-  | Some n -> Ok (n - 1)
-  | None -> Error (NotAnIndex arg)
+  | Some n when n >= 1 -> Ok (n - 1)
+  | Some _
+  | None ->
+    Error (NotAnIndex arg)
 ;;
 
 let parse line =
   let parsed =
-    line |> String.trim |> String.split_on_char ' ' |> List.filter (fun w -> w <> "")
+    line
+    |> String.map (fun c -> if c = '\t' then ' ' else c)
+    |> String.split_on_char ' '
+    |> List.filter (fun w -> w <> "")
   in
   let indices args = List.map to_index args |> sequence in
   match parsed with
@@ -68,8 +77,7 @@ let help =
   {|Comandos:
   p 1 3 5   joga as cartas nas posições 1, 3 e 5
   d 2 4     descarta as cartas nas posições 2 e 4
-  h         mostra esta ajuda
-  ?         mostra esta ajuda
+  h ou ?    mostra esta ajuda
   q         sai do jogo
 
 Na loja:

@@ -1,0 +1,5 @@
+(library
+ (name balatro_cli)
+ (libraries balatro)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.eq)))

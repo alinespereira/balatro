@@ -20,6 +20,15 @@ val jokers : Balatro.Joker.t list -> string
 (** The name of a planet, in Portuguese. *)
 val planet_name : Balatro.Consumables.Planet.t -> string
 
+(** The name of a blind stage, such as ["Small Blind"]. *)
+val stage : Balatro.Run.stage -> string
+
+(** The name of a poker hand, in Portuguese, such as ["Dois pares"]. *)
+val hand_name : Balatro.Poker.Hand.t -> string
+
+(** The money the player has, such as ["Dinheiro: $4"]. *)
+val money : int -> string
+
 (** The shop's offers, each under its 1-based position with its price, and the cost of
     the next reroll. *)
 val shop : Balatro.Shop.t -> string
