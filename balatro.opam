@@ -13,6 +13,7 @@ depends: [
   "ocaml"
   "ppx_deriving"
   "ppx_enumerate"
+  "alcotest" {with-test}
   "odoc" {with-doc}
 ]
 build: [

@@ -16,6 +16,10 @@
  (synopsis "An OCaml model of Balatro cards and scoring rules")
  (description
   "Work-in-progress OCaml project modeling Balatro cards, decks, poker hands, consumables, and scoring effects.")
- (depends ocaml ppx_deriving ppx_enumerate)
+ (depends
+  ocaml
+  ppx_deriving
+  ppx_enumerate
+  (alcotest :with-test))
  (tags
   ("balatro" "card-game" "poker")))
