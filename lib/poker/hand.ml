@@ -240,8 +240,38 @@ let evaluate cards =
   )
 ;;
 
-(* TODO: true only for the three secret hands. *)
-let is_secret _hand = failwith "TODO: Hand.is_secret"
+let is_secret = function
+  | HighCard
+  | Pair
+  | TwoPair
+  | ThreeOfAKind
+  | Straight
+  | Flush
+  | FullHouse
+  | FourOfAKind
+  | StraightFlush
+  | RoyalFlush ->
+    false
+  | FiveOfAKind
+  | FlushHouse
+  | FlushFive ->
+    true
+;;
 
-(* TODO: true for [Pair] and for every hand that has two cards of the same rank. *)
-let contains_pair _hand = failwith "TODO: Hand.contains_pair"
+let contains_pair = function
+  | Pair
+  | TwoPair
+  | ThreeOfAKind
+  | FullHouse
+  | FourOfAKind
+  | FiveOfAKind
+  | FlushHouse
+  | FlushFive ->
+    true
+  | Flush
+  | HighCard
+  | Straight
+  | StraightFlush
+  | RoyalFlush ->
+    false
+;;

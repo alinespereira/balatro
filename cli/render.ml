@@ -162,14 +162,19 @@ let shop (the_shop : Shop.t) =
 let status run =
   let { Run.ante; Run.stage = current; Run.boss; Run.blind; Run.money = cash; _ } = run in
   let { Blind.target; Blind.plays_left; Blind.discards_left; Blind.chips; _ } = blind in
+  let boss_label =
+    match current with
+    | Run.Boss -> "Chefe"
+    | Small
+    | Big ->
+      "Chefe do ante"
+  in
   String.concat
     "\n"
     [
       Printf.sprintf "Ante: %d" ante;
       Printf.sprintf "Rodada: %s" (stage current);
-      (* TODO: "Chefe do ante: ..." during the Small and Big blinds, when the boss is
-         only a preview, and "Chefe: ..." during the Boss blind. *)
-      Printf.sprintf "Chefe: %s (%s)" (boss_name boss) (boss_description boss);
+      Printf.sprintf "%s: %s (%s)" boss_label (boss_name boss) (boss_description boss);
       Printf.sprintf "Meta: %d" target;
       "";
       Printf.sprintf "Fichas: %d" chips;

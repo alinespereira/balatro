@@ -32,6 +32,9 @@ let use_planet planet levels =
     levels
 ;;
 
-(* TODO: add 1 to [played] in the entry of [hand], and leave the others as they are.
-   For now it changes nothing, so the run still works. *)
-let record_play _hand levels = levels
+let record_play hand levels =
+  HandMap.update
+    hand
+    (Option.map (fun { level; score; played } -> { level; score; played = played + 1 }))
+    levels
+;;
