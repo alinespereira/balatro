@@ -101,73 +101,74 @@ let detectors =
     ]
 ;;
 
-let failures = ref 0
+let poker_hand = Alcotest.testable Poker.Hand.pp Poker.Hand.equal
 
-let fail message =
-  incr failures;
-  print_endline ("FAIL " ^ message)
+(* [Card.t] does not derive [show], so its printer is written by hand. *)
+let card =
+  let pp fmt (c : Card.t) =
+    Format.fprintf fmt "%s of %s" (Card.show_rank c.rank) (Card.show_suit c.suit)
+  in
+  Alcotest.testable pp ( = )
 ;;
 
 let describe name cards = Printf.sprintf "%s [%s]" name cards
-let show_category = Option.fold ~none:"invalid" ~some:Poker.Hand.show
 
-(* Runs every detector on every example and reports all failures before exiting, so one
-   broken detector does not hide the others. A detector that is not implemented yet is
-   reported once instead of once per example. *)
-let () =
-  List.iter
-    (fun (category, detect) ->
-       let detector = Poker.Hand.show category in
-       try
+(* One test case per detector, each checking every example. Alcotest runs all the cases
+   and reports every one that fails, so one broken detector does not hide the others. *)
+let detector_cases =
+  List.map
+    (fun (expected_category, detect) ->
+       Alcotest.test_case (Poker.Hand.show expected_category) `Quick (fun () ->
          List.iter
-           (fun (name, cards, expected_category) ->
-              let expected = expected_category = Some category in
-              let actual = detect (hand cards) in
-              if actual <> expected then (
-                let example = describe name cards in
-                fail (Printf.sprintf "%s, %s: expected %b" detector example expected)
-              ))
-           examples
-       with
-       | Failure message -> fail (Printf.sprintf "%s, raised %s" detector message))
+           (fun (name, cards, example_category) ->
+              Alcotest.(check bool)
+                (describe name cards)
+                (example_category = Some expected_category)
+                (detect (hand cards)))
+           examples))
     detectors
 ;;
 
 (* [evaluate] agrees with the detectors and rejects hands with no cards or more than
    five. *)
-let () =
-  List.iter
+let evaluate_cases =
+  List.map
     (fun (name, cards, expected) ->
-       let actual =
-         match Poker.Hand.evaluate (hand cards) with
-         | Ok { Poker.Hand.category; _ } -> Some category
-         | Error (Poker.Hand.InvalidCardCount _) -> None
-       in
-       if actual <> expected then (
-         let example = describe name cards in
-         fail (Printf.sprintf "evaluate, %s: got %s" example (show_category actual))
-       ))
+       Alcotest.test_case (describe name cards) `Quick (fun () ->
+         let actual =
+           match Poker.Hand.evaluate (hand cards) with
+           | Ok { Poker.Hand.category; _ } -> Some category
+           | Error (Poker.Hand.InvalidCardCount _) -> None
+         in
+         Alcotest.(check (option poker_hand)) "category" expected actual))
     examples
 ;;
 
-let () =
-  let check cards expected =
-    match Poker.Hand.evaluate (hand cards) with
-    | Ok { Poker.Hand.scoring_cards; _ } when scoring_cards = hand expected -> ()
-    | _ -> fail (Printf.sprintf "scoring cards of [%s] should be [%s]" cards expected)
-  in
-  check "2C 7D 9H JS KC" "KC";
-  check "QC QD 3H" "QC QD";
-  check "2C 2D 5H 5S JC" "2C 2D 5H 5S";
-  check "7C 2S 7D KC 7H" "7C 7D 7H";
-  check "9C 9D 9H 9S KC" "9C 9D 9H 9S";
-  check "6C 2D 5H 3S 4C" "6C 2D 5H 3S 4C";
-  check "2C 2D 2H 3S 3C" "2C 2D 2H 3S 3C"
+let scoring_cases =
+  List.map
+    (fun (cards, expected) ->
+       Alcotest.test_case cards `Quick (fun () ->
+         match Poker.Hand.evaluate (hand cards) with
+         | Ok { Poker.Hand.scoring_cards; _ } ->
+           Alcotest.(check (list card)) "scoring cards" (hand expected) scoring_cards
+         | Error e -> Alcotest.fail (Poker.Hand.show_error e)))
+    [
+      "2C 7D 9H JS KC", "KC";
+      "QC QD 3H", "QC QD";
+      "2C 2D 5H 5S JC", "2C 2D 5H 5S";
+      "7C 2S 7D KC 7H", "7C 7D 7H";
+      "9C 9D 9H 9S KC", "9C 9D 9H 9S";
+      "6C 2D 5H 3S 4C", "6C 2D 5H 3S 4C";
+      "2C 2D 2H 3S 3C", "2C 2D 2H 3S 3C";
+    ]
 ;;
 
 let () =
-  if !failures > 0 then (
-    Printf.printf "%d failure(s)\n" !failures;
-    exit 1
-  )
+  Alcotest.run
+    "Hand"
+    [
+      "detectors", detector_cases;
+      "evaluate", evaluate_cases;
+      "scoring cards", scoring_cases;
+    ]
 ;;

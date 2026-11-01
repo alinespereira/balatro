@@ -3,14 +3,24 @@ open Balatro
 (* A run holds a function (its targets), so two runs cannot be compared with [=]. The
    tests compare errors, phases and fields instead. *)
 
+let stage = Alcotest.testable Run.pp_stage Run.equal_stage
+let status = Alcotest.testable Run.pp_status Run.equal_status
+let error = Alcotest.testable Run.pp_error ( = )
+let joker = Alcotest.testable Joker.pp Joker.equal
+let payout = Alcotest.testable Payout.pp Payout.equal
+
 let ok = function
   | Ok x -> x
-  | Error e -> failwith (Run.show_error e)
+  | Error e -> Alcotest.fail (Run.show_error e)
 ;;
 
-let fails expected = function
-  | Ok _ -> false
-  | Error e -> e = expected
+let expect_error name expected = function
+  | Error e -> Alcotest.check error name expected e
+  | Ok _ -> Alcotest.fail (name ^ ": expected " ^ Run.show_error expected)
+;;
+
+let check_playing name run =
+  Alcotest.(check bool) name true (Run.phase run = Run.Playing)
 ;;
 
 (* One state per test, shared by every step: a fresh state with the same seed would
@@ -34,7 +44,7 @@ let encoded ~ante stage = -((10 * ante) + stage_number stage)
 let shop_of run =
   match Run.phase run with
   | Run.Shopping { shop; _ } -> shop
-  | Run.Playing -> failwith "not shopping"
+  | Run.Playing -> Alcotest.fail "not shopping"
 ;;
 
 (* Beats blinds with [free] until a shop shows an offer matching [wanted]; returns its
@@ -55,59 +65,68 @@ let is_joker = function
 let is_planet item = not (is_joker item)
 
 let test_target () =
-  assert (Run.target ~ante:1 Run.Small = 300);
-  assert (Run.target ~ante:1 Run.Big = 450);
-  assert (Run.target ~ante:1 Run.Boss = 600);
-  assert (Run.target ~ante:Run.final_ante Run.Boss = 100_000);
+  Alcotest.(check int) "ante 1, small" 300 (Run.target ~ante:1 Run.Small);
+  Alcotest.(check int) "ante 1, big" 450 (Run.target ~ante:1 Run.Big);
+  Alcotest.(check int) "ante 1, boss" 600 (Run.target ~ante:1 Run.Boss);
+  Alcotest.(check int) "last boss" 100_000 (Run.target ~ante:Run.final_ante Run.Boss);
   for ante = 1 to Run.final_ante do
     let small = Run.target ~ante Run.Small in
     let big = Run.target ~ante Run.Big in
     let boss = Run.target ~ante Run.Boss in
-    assert (small < big && big < boss);
-    if ante > 1 then assert (Run.target ~ante:(ante - 1) Run.Boss < boss)
+    let name what = Printf.sprintf "ante %d: %s" ante what in
+    Alcotest.(check bool) (name "small < big < boss") true (small < big && big < boss);
+    if ante > 1
+    then
+      Alcotest.(check bool)
+        (name "grows from the last boss")
+        true
+        (Run.target ~ante:(ante - 1) Run.Boss < boss)
   done;
   let raises ante =
     match Run.target ~ante Run.Small with
     | _ -> false
     | exception Invalid_argument _ -> true
   in
-  assert (raises 0);
-  assert (raises (Run.final_ante + 1))
+  Alcotest.(check bool) "ante 0 raises" true (raises 0);
+  Alcotest.(check bool) "ante after the last raises" true (raises (Run.final_ante + 1))
 ;;
 
 let test_create () =
   let run = Run.create (rng ()) Deck.Red in
-  assert (Run.ante run = 1);
-  assert (Run.equal_stage (Run.stage run) Run.Small);
-  assert (Run.money run = Run.starting_money);
-  assert (Run.phase run = Run.Playing);
-  assert (Run.equal_status (Run.status run) Run.InProgress);
+  Alcotest.(check int) "ante" 1 (Run.ante run);
+  Alcotest.check stage "stage" Run.Small (Run.stage run);
+  Alcotest.(check int) "money" Run.starting_money (Run.money run);
+  check_playing "phase" run;
+  Alcotest.check status "status" Run.InProgress (Run.status run);
   let blind = Run.blind run in
-  assert (Blind.target blind = Run.target ~ante:1 Run.Small);
-  assert (Blind.chips blind = 0);
-  assert (List.length (Board.hand (Run.board run)) = 8);
-  assert (Board.jokers (Run.board run) = []);
+  Alcotest.(check int) "target" (Run.target ~ante:1 Run.Small) (Blind.target blind);
+  Alcotest.(check int) "no chips yet" 0 (Blind.chips blind);
+  Alcotest.(check int) "full hand" 8 (List.length (Board.hand (Run.board run)));
+  Alcotest.(check (list joker)) "no jokers" [] (Board.jokers (Run.board run));
   let pair = Poker.Levels.get Poker.Hand.Pair (Run.levels run) in
-  assert (pair.level = 1);
+  Alcotest.(check int) "pair level" 1 pair.level;
   (* [?target] replaces the default targets. *)
   let easy = Run.create ~target:encoded (rng ()) Deck.Red in
-  assert (Blind.target (Run.blind easy) = encoded ~ante:1 Run.Small)
+  Alcotest.(check int)
+    "custom target"
+    (encoded ~ante:1 Run.Small)
+    (Blind.target (Run.blind easy))
 ;;
 
 let test_play_and_discard () =
   let run = Run.create (rng ()) Deck.Red in
   let _, points, played = ok (Run.play [0] run) in
-  assert (points > 0);
-  assert (Blind.chips (Run.blind played) = points);
-  assert (Blind.plays_left (Run.blind played) = 3);
+  Alcotest.(check bool) "a play scores points" true (points > 0);
+  Alcotest.(check int) "chips" points (Blind.chips (Run.blind played));
+  Alcotest.(check int) "a play is spent" 3 (Blind.plays_left (Run.blind played));
   (* The run that was played from is left as it was. *)
-  assert (Blind.chips (Run.blind run) = 0);
+  Alcotest.(check int) "original chips" 0 (Blind.chips (Run.blind run));
   let discarded = ok (Run.discard [0; 1] run) in
-  assert (Blind.discards_left (Run.blind discarded) = 2);
-  assert (List.length (Board.hand (Run.board discarded)) = 8);
+  Alcotest.(check int) "a discard is spent" 2 (Blind.discards_left (Run.blind discarded));
+  Alcotest.(check int) "hand refilled" 8 (List.length (Board.hand (Run.board discarded)));
   let board_error e = Run.BlindError (Blind.BoardError e) in
-  assert (fails (board_error Board.NoCards) (Run.play [] run));
-  assert (fails (board_error (Board.InvalidIndex 8)) (Run.discard [8] run))
+  expect_error "play nothing" (board_error Board.NoCards) (Run.play [] run);
+  expect_error "bad index" (board_error (Board.InvalidIndex 8)) (Run.discard [8] run)
 ;;
 
 let test_lost () =
@@ -117,36 +136,40 @@ let test_lost () =
     | Error _ -> run
   in
   let run = Run.create ~target:impossible (rng ()) Deck.Red |> play_all in
-  assert (Blind.plays_left (Run.blind run) = 0);
-  assert (Run.equal_status (Run.status run) Run.Lost);
-  assert (fails (Run.BlindError Blind.NoPlaysLeft) (Run.play [0] run));
-  assert (fails Run.RunOver (Run.cash_out (rng ()) run))
+  Alcotest.(check int) "no plays left" 0 (Blind.plays_left (Run.blind run));
+  Alcotest.check status "lost" Run.Lost (Run.status run);
+  expect_error "play" (Run.BlindError Blind.NoPlaysLeft) (Run.play [0] run);
+  expect_error "cash out" Run.RunOver (Run.cash_out (rng ()) run)
 ;;
 
 let test_cash_out () =
   let rng = rng () in
   let run = Run.create (Random.State.make [| 42 |]) Deck.Red in
-  assert (fails Run.BlindNotOver (Run.cash_out rng run));
+  expect_error "blind not beaten" Run.BlindNotOver (Run.cash_out rng run);
   (* Small blind beaten before any play: $3, $4 for the plays left, no interest on $4. *)
   let run = Run.create ~target:free rng Deck.Red in
-  let payout, shopping = ok (Run.cash_out rng run) in
-  assert (Payout.equal payout (Payout.make ~reward:3 ~plays_left:4 ~money:4));
-  assert (Payout.total payout = 7);
-  assert (Run.money shopping = 11);
+  let paid, shopping = ok (Run.cash_out rng run) in
+  Alcotest.check
+    payout
+    "small blind payout"
+    (Payout.make ~reward:3 ~plays_left:4 ~money:4)
+    paid;
+  Alcotest.(check int) "total" 7 (Payout.total paid);
+  Alcotest.(check int) "money" 11 (Run.money shopping);
   let shop = shop_of shopping in
-  assert (List.length shop.Shop.offers = Shop.offer_count);
-  assert (shop.Shop.reroll_cost = Shop.base_reroll_cost);
+  Alcotest.(check int) "offers" Shop.offer_count (List.length shop.Shop.offers);
+  Alcotest.(check int) "reroll cost" Shop.base_reroll_cost shop.Shop.reroll_cost;
   (* Only the shop commands work while shopping. *)
-  assert (fails Run.InShop (Run.play [0] shopping));
-  assert (fails Run.InShop (Run.discard [0] shopping));
-  assert (fails Run.InShop (Run.cash_out rng shopping));
+  expect_error "play" Run.InShop (Run.play [0] shopping);
+  expect_error "discard" Run.InShop (Run.discard [0] shopping);
+  expect_error "cash out" Run.InShop (Run.cash_out rng shopping);
   (* Big blind: $4, $4 for the plays and $2 of interest on $11. *)
   let next = ok (Run.leave_shop rng shopping) in
-  let payout, shopping = ok (Run.cash_out rng next) in
-  assert (payout.Payout.blind = 4);
-  assert (payout.Payout.plays = 4);
-  assert (payout.Payout.interest = 2);
-  assert (Run.money shopping = 21)
+  let paid, shopping = ok (Run.cash_out rng next) in
+  Alcotest.(check int) "big blind reward" 4 paid.Payout.blind;
+  Alcotest.(check int) "plays left" 4 paid.Payout.plays;
+  Alcotest.(check int) "interest on $11" 2 paid.Payout.interest;
+  Alcotest.(check int) "money" 21 (Run.money shopping)
 ;;
 
 (* Every blind of the run, in order, each one with the target of its ante and stage.
@@ -159,21 +182,27 @@ let test_progression () =
   in
   let rec walk run = function
     | [] -> run
-    | (ante, stage) :: rest ->
-      assert (Run.ante run = ante);
-      assert (Run.equal_stage (Run.stage run) stage);
-      assert (Blind.target (Run.blind run) = encoded ~ante stage);
+    | (ante, expected_stage) :: rest ->
+      let name what =
+        Printf.sprintf "%d %s: %s" ante (Run.show_stage expected_stage) what
+      in
+      Alcotest.(check int) (name "ante") ante (Run.ante run);
+      Alcotest.check stage (name "stage") expected_stage (Run.stage run);
+      Alcotest.(check int)
+        (name "target")
+        (encoded ~ante expected_stage)
+        (Blind.target (Run.blind run));
       (match rest with
        | [] -> run
        | _ ->
-         assert (Run.equal_status (Run.status run) Run.InProgress);
+         Alcotest.check status (name "in progress") Run.InProgress (Run.status run);
          let _, shopping = ok (Run.cash_out rng run) in
          walk (ok (Run.leave_shop rng shopping)) rest)
   in
   let last = walk (Run.create ~target:encoded rng Deck.Red) blinds in
-  assert (List.length blinds = 24);
-  assert (Run.equal_status (Run.status last) Run.Won);
-  assert (fails Run.RunOver (Run.cash_out rng last))
+  Alcotest.(check int) "24 blinds" 24 (List.length blinds);
+  Alcotest.check status "won" Run.Won (Run.status last);
+  expect_error "no shop after the last boss" Run.RunOver (Run.cash_out rng last)
 ;;
 
 (* The next blind starts with every card back in the deck and a full hand. *)
@@ -182,39 +211,51 @@ let test_leave_shop_resets_board () =
   let run = Run.create ~target:(fun ~ante:_ _ -> 1) rng Deck.Red in
   let run = ok (Run.discard [0; 1; 2] run) in
   let _, _, run = ok (Run.play [0] run) in
-  assert (Board.discarded (Run.board run) <> []);
+  Alcotest.(check bool) "cards were used" true (Board.discarded (Run.board run) <> []);
   let _, shopping = ok (Run.cash_out rng run) in
   let next = ok (Run.leave_shop rng shopping) in
   let board = Run.board next in
-  assert (Board.discarded board = []);
-  assert (List.length (Board.hand board) = 8);
-  assert (List.length (Deck.cards (Board.deck board)) = 44);
-  assert (Blind.plays_left (Run.blind next) = 4);
-  assert (Blind.discards_left (Run.blind next) = 3)
+  Alcotest.(check int) "nothing discarded" 0 (List.length (Board.discarded board));
+  Alcotest.(check int) "full hand" 8 (List.length (Board.hand board));
+  Alcotest.(check int) "deck" 44 (List.length (Deck.cards (Board.deck board)));
+  Alcotest.(check int) "plays" 4 (Blind.plays_left (Run.blind next));
+  Alcotest.(check int) "discards" 3 (Blind.discards_left (Run.blind next))
 ;;
 
 let test_buy_and_sell_joker () =
   let rng = rng () in
   let idx, shopping = shop_with rng is_joker (Run.create ~target:free rng Deck.Red) in
-  let joker =
+  let bought_joker =
     match List.nth (shop_of shopping).Shop.offers idx with
     | Shop.JokerItem joker -> joker
-    | Shop.PlanetItem _ -> assert false
+    | Shop.PlanetItem _ -> Alcotest.fail "expected a joker"
   in
   let money = Run.money shopping in
   let bought = ok (Run.buy idx shopping) in
-  assert (Run.money bought = money - Joker.cost joker);
-  assert (Board.jokers (Run.board bought) = [joker]);
-  assert (List.length (shop_of bought).Shop.offers = Shop.offer_count - 1);
+  Alcotest.(check int) "pays" (money - Joker.cost bought_joker) (Run.money bought);
+  Alcotest.(check (list joker))
+    "joker on the board"
+    [bought_joker]
+    (Board.jokers (Run.board bought));
+  Alcotest.(check int)
+    "offer taken"
+    (Shop.offer_count - 1)
+    (List.length (shop_of bought).Shop.offers);
   (* The joker goes with the board to the next blind. *)
   let next = ok (Run.leave_shop rng bought) in
-  assert (Board.jokers (Run.board next) = [joker]);
+  Alcotest.(check (list joker)) "kept" [bought_joker] (Board.jokers (Run.board next));
   (* Selling gives back [sell_value]; then there is nothing left to sell. *)
   let sold = ok (Run.sell_joker 0 bought) in
-  assert (Run.money sold = Run.money bought + Joker.sell_value joker);
-  assert (Board.jokers (Run.board sold) = []);
-  assert (fails (Run.BoardError (Board.NoJokerAt 0)) (Run.sell_joker 0 sold));
-  assert (fails (Run.BoardError (Board.NoJokerAt (-1))) (Run.sell_joker (-1) bought))
+  Alcotest.(check int)
+    "sell value"
+    (Run.money bought + Joker.sell_value bought_joker)
+    (Run.money sold);
+  Alcotest.(check (list joker)) "joker sold" [] (Board.jokers (Run.board sold));
+  expect_error "sell again" (Run.BoardError (Board.NoJokerAt 0)) (Run.sell_joker 0 sold);
+  expect_error
+    "negative index"
+    (Run.BoardError (Board.NoJokerAt (-1)))
+    (Run.sell_joker (-1) bought)
 ;;
 
 let test_buy_planet () =
@@ -223,7 +264,7 @@ let test_buy_planet () =
   let planet =
     match List.nth (shop_of shopping).Shop.offers idx with
     | Shop.PlanetItem planet -> planet
-    | Shop.JokerItem _ -> assert false
+    | Shop.JokerItem _ -> Alcotest.fail "expected a planet"
   in
   let level hand run = (Poker.Levels.get hand (Run.levels run)).level in
   let levelled =
@@ -233,14 +274,15 @@ let test_buy_planet () =
   in
   let before = List.map (fun hand -> level hand shopping) levelled in
   let bought = ok (Run.buy idx shopping) in
-  assert (Run.money bought = Run.money shopping - 3);
-  assert (Board.jokers (Run.board bought) = []);
+  Alcotest.(check int) "pays $3" (Run.money shopping - 3) (Run.money bought);
+  Alcotest.(check (list joker)) "no joker" [] (Board.jokers (Run.board bought));
   (* The planet is used right away, and the new level stays for the next blind. *)
   let next = ok (Run.leave_shop rng bought) in
   List.iter2
     (fun hand old_level ->
-       assert (level hand bought = old_level + 1);
-       assert (level hand next = old_level + 1))
+       let name = Poker.Hand.show hand in
+       Alcotest.(check int) (name ^ " in the shop") (old_level + 1) (level hand bought);
+       Alcotest.(check int) (name ^ " next blind") (old_level + 1) (level hand next))
     levelled
     before
 ;;
@@ -250,17 +292,20 @@ let test_buy_planet () =
 let test_reroll_and_money () =
   let rng = rng () in
   let _, shopping = ok (Run.cash_out rng (Run.create ~target:free rng Deck.Red)) in
-  assert (Run.money shopping = 11);
+  Alcotest.(check int) "money" 11 (Run.money shopping);
   let once = ok (Run.reroll rng shopping) in
-  assert (Run.money once = 6);
-  assert ((shop_of once).Shop.reroll_cost = 6);
-  assert (List.length (shop_of once).Shop.offers = Shop.offer_count);
+  Alcotest.(check int) "first reroll costs $5" 6 (Run.money once);
+  Alcotest.(check int) "next reroll cost" 6 (shop_of once).Shop.reroll_cost;
+  Alcotest.(check int) "offers" Shop.offer_count (List.length (shop_of once).Shop.offers);
   let twice = ok (Run.reroll rng once) in
-  assert (Run.money twice = 0);
-  assert (fails (Run.NotEnoughMoney 7) (Run.reroll rng twice));
+  Alcotest.(check int) "second reroll costs $6" 0 (Run.money twice);
+  expect_error "reroll without money" (Run.NotEnoughMoney 7) (Run.reroll rng twice);
   let first = List.hd (shop_of twice).Shop.offers in
-  assert (fails (Run.NotEnoughMoney (Shop.price first)) (Run.buy 0 twice));
-  assert (fails (Run.ShopError (Shop.NoOfferAt 5)) (Run.buy 5 shopping))
+  expect_error
+    "buy without money"
+    (Run.NotEnoughMoney (Shop.price first))
+    (Run.buy 0 twice);
+  expect_error "no offer there" (Run.ShopError (Shop.NoOfferAt 5)) (Run.buy 5 shopping)
 ;;
 
 (* A planet used during a blind counts from then on, through the shop and into the
@@ -270,23 +315,34 @@ let test_use_planet () =
   let level run = (Poker.Levels.get Poker.Hand.HighCard (Run.levels run)).level in
   let run = Run.create ~target:free rng Deck.Red in
   let run = Run.use_planet Consumables.Planet.Pluto run in
-  assert (level run = 2);
+  Alcotest.(check int) "during the blind" 2 (level run);
   let _, shopping = ok (Run.cash_out rng run) in
-  assert (level shopping = 2);
+  Alcotest.(check int) "in the shop" 2 (level shopping);
   let next = ok (Run.leave_shop rng shopping) in
-  assert (level next = 2)
+  Alcotest.(check int) "in the next blind" 2 (level next)
 ;;
 
 let () =
-  test_target ();
-  test_create ();
-  test_play_and_discard ();
-  test_lost ();
-  test_cash_out ();
-  test_progression ();
-  test_leave_shop_resets_board ();
-  test_buy_and_sell_joker ();
-  test_buy_planet ();
-  test_reroll_and_money ();
-  test_use_planet ()
+  let case name test = Alcotest.test_case name `Quick test in
+  Alcotest.run
+    "Run"
+    [
+      ( "blinds",
+        [
+          case "target" test_target;
+          case "create" test_create;
+          case "play and discard" test_play_and_discard;
+          case "lost" test_lost;
+          case "progression" test_progression;
+        ] );
+      ( "shop",
+        [
+          case "cash out" test_cash_out;
+          case "leave shop resets the board" test_leave_shop_resets_board;
+          case "buy and sell a joker" test_buy_and_sell_joker;
+          case "buy a planet" test_buy_planet;
+          case "reroll and money" test_reroll_and_money;
+          case "use a planet" test_use_planet;
+        ] );
+    ]
 ;;

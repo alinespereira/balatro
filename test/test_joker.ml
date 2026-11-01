@@ -3,7 +3,7 @@ open Balatro
 let play cards =
   match Play.make cards with
   | Ok play -> play
-  | Error e -> failwith (Poker.Hand.show_error e)
+  | Error e -> Alcotest.fail (Poker.Hand.show_error e)
 ;;
 
 let pair_of_diamonds =
@@ -31,10 +31,15 @@ let scored ?(chips = 0) ?(mult = 0.) changes =
   Score.apply_all changes (Score.create ~chips ~mult)
 ;;
 
+let score = Alcotest.testable Score.pp Score.equal
+let joker = Alcotest.testable Joker.pp Joker.equal
+
 let check ?chips ?mult ~expected_chips ~expected_mult changes =
-  let score = scored ?chips ?mult changes in
-  assert (score.Score.chips = expected_chips);
-  assert (Float.equal score.Score.mult expected_mult)
+  Alcotest.check
+    score
+    "score"
+    (Score.create ~chips:expected_chips ~mult:expected_mult)
+    (scored ?chips ?mult changes)
 ;;
 
 let test_changes () =
@@ -86,40 +91,53 @@ let test_order () =
 ;;
 
 let test_sell_value () =
-  assert (Joker.sell_value Joker.Joker = 1);
-  assert (Joker.sell_value Joker.GreedyJoker = 2);
+  Alcotest.(check int) "joker" 1 (Joker.sell_value Joker.Joker);
+  Alcotest.(check int) "greedy joker" 2 (Joker.sell_value Joker.GreedyJoker);
   List.iter
     (fun joker ->
-       assert (Joker.sell_value joker >= 1 && Joker.sell_value joker < Joker.cost joker))
+       let value = Joker.sell_value joker in
+       Alcotest.(check bool)
+         (Joker.show joker ^ " sells for less than it costs")
+         true
+         (value >= 1 && value < Joker.cost joker))
     Joker.all
 ;;
 
 let test_board_slots () =
   let ok = function
     | Ok board -> board
-    | Error e -> failwith (Board.show_error e)
+    | Error e -> Alcotest.fail (Board.show_error e)
   in
   let board = Board.create (Random.State.make [| 42 |]) Deck.Red in
+  let five = Joker.[Joker; GreedyJoker; Banner; HalfJoker; Cavendish] in
   let full =
-    List.fold_left
-      (fun board joker -> ok (Board.add_joker joker board))
-      board
-      Joker.[Joker; GreedyJoker; Banner; HalfJoker; Cavendish]
+    List.fold_left (fun board joker -> ok (Board.add_joker joker board)) board five
   in
-  assert (Board.jokers full = Joker.[Joker; GreedyJoker; Banner; HalfJoker; Cavendish]);
-  assert (Board.add_joker Joker.JollyJoker full = Error Board.NoJokerSlot);
-  (match Board.remove_joker 1 full with
-   | Ok (joker, after) ->
-     assert (joker = Joker.GreedyJoker);
-     assert (Board.jokers after = Joker.[Joker; Banner; HalfJoker; Cavendish])
-   | Error e -> failwith (Board.show_error e));
-  assert (Result.is_error (Board.remove_joker 5 full));
-  assert (Result.is_error (Board.remove_joker (-1) full))
+  Alcotest.(check (list joker)) "five jokers" five (Board.jokers full);
+  Alcotest.(check bool)
+    "no sixth slot"
+    true
+    (Board.add_joker Joker.JollyJoker full = Error Board.NoJokerSlot);
+  let removed, after = ok (Board.remove_joker 1 full) in
+  Alcotest.check joker "removed" Joker.GreedyJoker removed;
+  Alcotest.(check (list joker))
+    "jokers left"
+    Joker.[Joker; Banner; HalfJoker; Cavendish]
+    (Board.jokers after);
+  Alcotest.(check bool) "index 5" true (Result.is_error (Board.remove_joker 5 full));
+  Alcotest.(check bool) "index -1" true (Result.is_error (Board.remove_joker (-1) full))
 ;;
 
 let () =
-  test_changes ();
-  test_order ();
-  test_sell_value ();
-  test_board_slots ()
+  Alcotest.run
+    "Joker"
+    [
+      ( "joker",
+        [
+          Alcotest.test_case "changes" `Quick test_changes;
+          Alcotest.test_case "order" `Quick test_order;
+          Alcotest.test_case "sell value" `Quick test_sell_value;
+          Alcotest.test_case "board slots" `Quick test_board_slots;
+        ] );
+    ]
 ;;
