@@ -86,7 +86,7 @@ jobs:
       # runs, so only the first release after a dependency change pays for
       # installing them (several minutes on Windows).
       - name: Cache opam packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: _opam
           key: opam-release-${{ runner.os }}-5.4.1-${{ hashFiles('*.opam') }}
