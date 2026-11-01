@@ -16,13 +16,35 @@ type limits = {
 
 let random rng = List.nth all (Random.State.int rng (List.length all))
 
-(* TODO: return the limits changed by the boss. A record update, such as
-   [{ limits with discards = 0 }], copies every field except the ones it names. *)
-let limits _boss _limits = failwith "TODO: Boss.limits"
+let limits boss limits =
+  let { plays = the_plays; target = the_target; _ } = limits in
+  match boss with
+  | Drought -> { limits with discards = 0 }
+  | Hourglass -> { limits with plays = max 1 (the_plays - 1) }
+  | Giant -> { limits with target = the_target * 3 / 2 }
+  | Eclipse _
+  | Fog
+  | Muzzle ->
+    limits
+;;
 
-(* TODO: [Eclipse suit] debuffs the cards of [suit], [Fog] the face cards, and the
-   other bosses none. Pattern matching can look inside [Eclipse] and name the suit. *)
-let debuffs _boss _card = failwith "TODO: Boss.debuffs"
+let debuffs boss card =
+  match boss, card with
+  | Drought, _
+  | Hourglass, _
+  | Giant, _ ->
+    false
+  | Eclipse boss_suit, { Card.suit = card_suit; _ } -> boss_suit = card_suit
+  | Fog, { Card.rank; _ } -> List.mem rank [Card.Jack; Card.Queen; Card.King]
+  | Muzzle, _ -> false
+;;
 
-(* TODO: only [Muzzle]. *)
-let disables_jokers _boss = failwith "TODO: Boss.disables_jokers"
+let disables_jokers = function
+  | Drought
+  | Hourglass
+  | Giant
+  | Eclipse _
+  | Fog ->
+    false
+  | Muzzle -> true
+;;
