@@ -213,11 +213,34 @@ let buy idx run =
         }
 ;;
 
-(* TODO: [NotInShop] while playing. Remove the joker from the shop's board with
-   [Board.remove_joker] ([BoardError] if there is none) and add its
-   [Joker.sell_value] to the money. *)
-let sell_joker _ _ = failwith "Run.sell_joker: not implemented"
+let sell_joker idx run =
+  let { phase = the_phase; money = the_money; _ } = run in
+  match the_phase with
+  | Playing -> Error NotInShop
+  | Shopping { shop; board } ->
+    Board.remove_joker idx board
+    |> Result.map (fun (joker, new_board) ->
+      {
+        run with
+        money = the_money + Joker.sell_value joker;
+        phase = Shopping { shop; board = new_board };
+      })
+    |> Result.map_error (fun e -> BoardError e)
+;;
 
-(* TODO: [NotInShop] while playing, [NotEnoughMoney] without [reroll_cost]. Pay the
-   cost from before the reroll, then [Shop.reroll]. *)
-let reroll _ _ = failwith "Run.reroll: not implemented"
+let reroll rng run =
+  let { phase = the_phase; money = the_money; _ } = run in
+  match the_phase with
+  | Playing -> Error NotInShop
+  | Shopping { shop; board } ->
+    let { Shop.reroll_cost; _ } = shop in
+    if reroll_cost < the_money then
+      Ok
+        {
+          run with
+          money = the_money - reroll_cost;
+          phase = Shopping { shop = Shop.reroll rng shop; board };
+        }
+    else
+      Error (NotEnoughMoney reroll_cost)
+;;
