@@ -9,4 +9,4 @@
   test_play
   test_run
   test_shop)
- (libraries balatro))
+ (libraries balatro alcotest))

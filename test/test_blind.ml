@@ -7,82 +7,90 @@ let fresh_blind ?plays ?discards ~target color =
   Blind.create ?plays ?discards ~target board
 ;;
 
+(* Testables tell Alcotest how to compare and print values of our own types. [status]
+   derives [eq]; [error] does not, so it uses structural equality. *)
+let status = Alcotest.testable Blind.pp_status Blind.equal_status
+let error = Alcotest.testable Blind.pp_error ( = )
+
 let play_ok indices blind =
   match Blind.play levels indices blind with
   | Ok result -> result
-  | Error e -> failwith (Blind.show_error e)
+  | Error e -> Alcotest.fail (Blind.show_error e)
 ;;
 
 let discard_ok indices blind =
   match Blind.discard indices blind with
   | Ok blind -> blind
-  | Error e -> failwith (Blind.show_error e)
+  | Error e -> Alcotest.fail (Blind.show_error e)
 ;;
 
 let expect_play_error indices blind expected =
   match Blind.play levels indices blind with
-  | Error e -> assert (e = expected)
-  | Ok _ -> failwith ("expected " ^ Blind.show_error expected)
+  | Error e -> Alcotest.check error "play error" expected e
+  | Ok _ -> Alcotest.fail ("expected " ^ Blind.show_error expected)
 ;;
 
 let expect_discard_error indices blind expected =
   match Blind.discard indices blind with
-  | Error e -> assert (e = expected)
-  | Ok _ -> failwith ("expected " ^ Blind.show_error expected)
+  | Error e -> Alcotest.check error "discard error" expected e
+  | Ok _ -> Alcotest.fail ("expected " ^ Blind.show_error expected)
 ;;
 
 let hand_size blind = List.length (Board.hand (Blind.board blind))
 
 let test_create color =
   let blind = fresh_blind ~target:300 color in
-  assert (Blind.target blind = 300);
-  assert (Blind.plays_left blind = 4);
-  assert (Blind.discards_left blind = 3);
-  assert (Blind.chips blind = 0);
-  assert (Blind.status blind = Blind.InProgress);
+  Alcotest.(check int) "target" 300 (Blind.target blind);
+  Alcotest.(check int) "4 plays by default" 4 (Blind.plays_left blind);
+  Alcotest.(check int) "3 discards by default" 3 (Blind.discards_left blind);
+  Alcotest.(check int) "no chips yet" 0 (Blind.chips blind);
+  Alcotest.check status "in progress" Blind.InProgress (Blind.status blind);
   (* The round starts with a full hand. *)
-  assert (hand_size blind = 8);
+  Alcotest.(check int) "full hand" 8 (hand_size blind);
   let custom = fresh_blind ~plays:2 ~discards:5 ~target:300 color in
-  assert (Blind.plays_left custom = 2);
-  assert (Blind.discards_left custom = 5)
+  Alcotest.(check int) "custom plays" 2 (Blind.plays_left custom);
+  Alcotest.(check int) "custom discards" 5 (Blind.discards_left custom)
 ;;
 
 let test_play color =
   let blind = fresh_blind ~target:1_000_000 color in
   let _, first_points, after_first = play_ok [0] blind in
-  assert (first_points > 0);
-  assert (Blind.chips after_first = first_points);
-  assert (Blind.plays_left after_first = 3);
-  assert (Blind.discards_left after_first = 3);
+  Alcotest.(check bool) "a play scores points" true (first_points > 0);
+  Alcotest.(check int) "chips after one play" first_points (Blind.chips after_first);
+  Alcotest.(check int) "a play is spent" 3 (Blind.plays_left after_first);
+  Alcotest.(check int) "discards are kept" 3 (Blind.discards_left after_first);
   (* The hand is refilled after playing. *)
-  assert (hand_size after_first = 8);
+  Alcotest.(check int) "hand refilled" 8 (hand_size after_first);
   let _, second_points, after_second = play_ok [0; 1] after_first in
-  assert (Blind.chips after_second = first_points + second_points);
-  assert (Blind.plays_left after_second = 2);
+  Alcotest.(check int)
+    "chips add up"
+    (first_points + second_points)
+    (Blind.chips after_second);
+  Alcotest.(check int) "two plays spent" 2 (Blind.plays_left after_second);
   (* The original round remains unchanged. *)
-  assert (Blind.chips blind = 0);
-  assert (Blind.plays_left blind = 4)
+  Alcotest.(check int) "original chips" 0 (Blind.chips blind);
+  Alcotest.(check int) "original plays" 4 (Blind.plays_left blind)
 ;;
 
 let test_discard color =
   let blind = fresh_blind ~target:300 color in
   let after = discard_ok [0; 1; 2] blind in
-  assert (Blind.discards_left after = 2);
-  assert (Blind.plays_left after = 4);
-  assert (Blind.chips after = 0);
-  assert (hand_size after = 8);
+  Alcotest.(check int) "a discard is spent" 2 (Blind.discards_left after);
+  Alcotest.(check int) "plays are kept" 4 (Blind.plays_left after);
+  Alcotest.(check int) "discarding scores nothing" 0 (Blind.chips after);
+  Alcotest.(check int) "hand refilled" 8 (hand_size after);
   let no_discards = after |> discard_ok [0] |> discard_ok [0] in
-  assert (Blind.discards_left no_discards = 0);
+  Alcotest.(check int) "no discards left" 0 (Blind.discards_left no_discards);
   expect_discard_error [0] no_discards Blind.NoDiscardsLeft;
   (* Playing is still allowed without discards. *)
   let _, _, played = play_ok [0] no_discards in
-  assert (Blind.plays_left played = 3)
+  Alcotest.(check int) "can still play" 3 (Blind.plays_left played)
 ;;
 
 let test_won color =
   let blind = fresh_blind ~target:1 color in
   let _, _, won = play_ok [0] blind in
-  assert (Blind.status won = Blind.Won);
+  Alcotest.check status "won" Blind.Won (Blind.status won);
   expect_play_error [0] won Blind.RoundOver;
   expect_discard_error [0] won Blind.RoundOver
 ;;
@@ -94,8 +102,8 @@ let test_lost color =
     blind
   in
   let lost = blind |> play |> play |> play |> play in
-  assert (Blind.plays_left lost = 0);
-  assert (Blind.status lost = Blind.Lost);
+  Alcotest.(check int) "no plays left" 0 (Blind.plays_left lost);
+  Alcotest.check status "lost" Blind.Lost (Blind.status lost);
   expect_play_error [0] lost Blind.NoPlaysLeft;
   expect_discard_error [0] lost Blind.RoundOver
 ;;
@@ -109,13 +117,23 @@ let test_board_errors color =
 ;;
 
 let () =
-  List.iter
-    (fun color ->
-       test_create color;
-       test_play color;
-       test_discard color;
-       test_won color;
-       test_lost color;
-       test_board_errors color)
-    [Deck.Red; Deck.Blue; Deck.Green]
+  let color_name = function
+    | Deck.Red -> "red"
+    | Deck.Blue -> "blue"
+    | Deck.Green -> "green"
+  in
+  let cases color =
+    List.map
+      (fun (name, test) -> Alcotest.test_case name `Quick (fun () -> test color))
+      [
+        "create", test_create;
+        "play", test_play;
+        "discard", test_discard;
+        "won", test_won;
+        "lost", test_lost;
+        "board errors", test_board_errors;
+      ]
+  in
+  let colors = [Deck.Red; Deck.Blue; Deck.Green] in
+  Alcotest.run "Blind" (List.map (fun color -> color_name color, cases color) colors)
 ;;
