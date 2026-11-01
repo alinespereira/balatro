@@ -2,9 +2,24 @@ name: Release
 
 # Runs when a version tag is pushed, e.g.:
 #   git tag v0.1.0 && git push origin v0.1.0
+#
+# It can also be started by hand for a tag that already exists (Actions tab →
+# Release → "Run workflow"), e.g. to add new executables to an old release:
+#   gh workflow run release.yml -f tag=v0.1.0
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and release (e.g. v0.1.0)"
+        required: true
+        type: string
+
+# The tag being released: the input when started by hand, otherwise the
+# pushed tag.
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   create-release:
@@ -17,7 +32,6 @@ jobs:
       - name: Create GitHub release for the tag
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
         # Skip creation if the release already exists (e.g. it was created
         # from the GitHub web UI, which also pushes the tag).
         run: |
@@ -30,17 +44,38 @@ jobs:
               --generate-notes
           fi
 
-  build-windows:
-    name: Build Windows executable
+  build:
+    # One job per operating system. The matrix below makes GitHub run the
+    # same steps three times, each time with a different value of
+    # `matrix.os` (the runner) and `matrix.suffix` (the asset name ending).
+    name: Build ${{ matrix.name }} executable
     needs: create-release
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     permissions:
       contents: write
+    strategy:
+      # Keep building the other systems even if one of them fails.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            suffix: windows.exe
+          - name: Linux
+            os: ubuntu-latest
+            suffix: linux-x86_64
+          - name: macOS
+            os: macos-latest
+            suffix: macos-arm64
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          # Build the code at the tag, even when the workflow was started by
+          # hand from main.
+          ref: ${{ env.TAG }}
 
       - name: Set up OCaml
         uses: ocaml/setup-ocaml@v3
@@ -57,8 +92,10 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          SUFFIX: ${{ matrix.suffix }}
+        # dune names the binary main.exe on every system; the extension only
+        # matters on Windows, so the Linux/macOS assets drop it.
         run: |
-          asset="balatro-${TAG}-windows.exe"
+          asset="balatro-${TAG}-${SUFFIX}"
           cp _build/default/bin/main.exe "$asset"
           gh release upload "$TAG" "$asset" --repo "$GITHUB_REPOSITORY" --clobber

@@ -24,6 +24,27 @@ opam exec -- dune exec balatro
 
 O executável ainda é um ponto de entrada inicial; o projeto não implementa um jogo completo.
 
+## Baixar um executável pronto
+
+Cada release (criada ao dar push de uma tag `v*`) traz executáveis para três sistemas:
+
+- `balatro-<tag>-windows.exe`
+- `balatro-<tag>-linux-x86_64`
+- `balatro-<tag>-macos-arm64` (Macs com Apple Silicon)
+
+No Linux e no macOS, o arquivo baixado vem sem permissão de execução. Antes de rodar:
+
+```sh
+chmod +x balatro-<tag>-linux-x86_64
+./balatro-<tag>-linux-x86_64
+```
+
+No macOS, o executável não é assinado, então o Gatekeeper pode bloqueá-lo. Para liberar:
+
+```sh
+xattr -d com.apple.quarantine balatro-<tag>-macos-arm64
+```
+
 ## Rodar os testes
 
 ```sh
