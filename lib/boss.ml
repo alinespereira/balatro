@@ -14,11 +14,8 @@ type limits = {
 }
 [@@deriving show, eq]
 
-(* TODO: draw only from the bosses that are not in [avoid], unless that leaves none.
-   For now it ignores [avoid]. *)
 let random ?(avoid = []) rng =
-  ignore avoid;
-  List.nth all (Random.State.int rng (List.length all))
+  all |> List.filter (fun boss -> not (List.mem boss avoid)) |> Util.draw rng |> fst
 ;;
 
 let limits boss limits =

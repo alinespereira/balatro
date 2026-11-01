@@ -23,10 +23,12 @@ let all_items =
   @ List.map (fun planet -> PlanetItem planet) Consumables.Planet.all
 ;;
 
-(* TODO: filter [all_items]. For now it returns everything, so the shop still works. *)
-let available ~jokers ~levels =
-  ignore (jokers, levels);
+let available ~jokers ~levels:_ =
   all_items
+  |> List.filter (fun item ->
+    match item with
+    | JokerItem joker -> List.mem joker jokers
+    | PlanetItem _ -> true)
 ;;
 
 let draw_offers rng from = from |> Util.shuffle rng |> List.take offer_count
