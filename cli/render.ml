@@ -295,7 +295,6 @@ let blind_error : Blind.error -> string = function
   | NoDiscardsLeft -> "Não há mais descartes nesta rodada"
   | RoundOver -> "A rodada já terminou"
   | BoardError e -> board_error e
-  | NotUsable c -> Printf.sprintf "%s ainda não pode ser usado" (consumable c)
 ;;
 
 let error : Run.error -> string = function
