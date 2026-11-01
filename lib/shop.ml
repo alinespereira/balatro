@@ -29,13 +29,12 @@ let available ~jokers ~levels =
     match item with
     | JokerItem joker -> not (List.mem joker jokers)
     | PlanetItem planet ->
+      (* A planet shows up if one of its hands is not secret or was already played. *)
       Poker.Hand.all
-      |> List.map (fun hand -> hand, Poker.Levels.get hand levels)
-      |> List.filter (fun (_, entry) -> Poker.Levels.played entry > 0)
-      |> List.split
-      |> fst
-      |> List.map Poker.Hand.planet
-      |> List.mem planet)
+      |> List.exists (fun hand ->
+        let played = Poker.Levels.played (Poker.Levels.get hand levels) in
+        Consumables.Planet.equal (Poker.Hand.planet hand) planet
+        && ((not (Poker.Hand.is_secret hand)) || played > 0)))
 ;;
 
 let draw_offers rng from = from |> Util.shuffle rng |> List.take offer_count

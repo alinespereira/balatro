@@ -15,9 +15,12 @@ type limits = {
 [@@deriving show, eq]
 
 let random ?(avoid = []) rng =
-  match all |> List.filter (fun boss -> not (List.mem boss avoid)) with
-  | [] -> all |> Util.draw rng |> fst
-  | filtered -> filtered |> Util.draw rng |> fst
+  let candidates =
+    match List.filter (fun boss -> not (List.mem boss avoid)) all with
+    | [] -> all
+    | filtered -> filtered
+  in
+  candidates |> Util.draw rng |> fst
 ;;
 
 let limits boss limits =
