@@ -199,7 +199,10 @@ let test_progression () =
           in
           Some (Run.boss run), (Boss.limits (Run.boss run) limits).Boss.target
       in
-      Alcotest.(check (option boss)) (name "boss") expected_boss (Blind.boss (Run.blind run));
+      Alcotest.(check (option boss))
+        (name "boss")
+        expected_boss
+        (Blind.boss (Run.blind run));
       Alcotest.(check int) (name "target") expected_target (Blind.target (Run.blind run));
       (match rest with
        | [] -> run

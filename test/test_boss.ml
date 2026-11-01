@@ -30,7 +30,9 @@ let test_random () =
 ;;
 
 let test_limits () =
-  let check name expected b = Alcotest.check limits name expected (Boss.limits b default) in
+  let check name expected b =
+    Alcotest.check limits name expected (Boss.limits b default)
+  in
   check "drought: no discards" { default with Boss.discards = 0 } Boss.Drought;
   check "hourglass: one play fewer" { default with Boss.plays = 3 } Boss.Hourglass;
   check "giant: 50% more" { default with Boss.target = 900 } Boss.Giant;

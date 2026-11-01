@@ -37,9 +37,7 @@ let distinct strings = List.length (List.sort_uniq String.compare strings)
 (* Whether [sub] appears somewhere in [s]. *)
 let contains ~sub s =
   let n = String.length sub in
-  let rec from i =
-    i + n <= String.length s && (String.sub s i n = sub || from (i + 1))
-  in
+  let rec from i = i + n <= String.length s && (String.sub s i n = sub || from (i + 1)) in
   from 0
 ;;
 
@@ -52,7 +50,10 @@ let test_boss () =
       Boss.all
   in
   (* Every eclipse has the same name, and every other boss a name of its own. *)
-  Alcotest.(check int) "one name for the eclipses" 1 (distinct (List.map Render.boss_name eclipses));
+  Alcotest.(check int)
+    "one name for the eclipses"
+    1
+    (distinct (List.map Render.boss_name eclipses));
   Alcotest.(check int)
     "a name for each of the others"
     (List.length others + 1)

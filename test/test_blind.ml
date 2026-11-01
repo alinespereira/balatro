@@ -165,11 +165,7 @@ let test_boss_limits () =
 let test_eclipse () =
   let suit = (first_card (fresh_blind ~target:1_000 Deck.Red)).Card.suit in
   let blind =
-    fresh_blind
-      ~boss:(Boss.Eclipse suit)
-      ~jokers:[suit_joker suit]
-      ~target:1_000
-      Deck.Red
+    fresh_blind ~boss:(Boss.Eclipse suit) ~jokers:[suit_joker suit] ~target:1_000 Deck.Red
   in
   let _, points, _ = play_ok [0] blind in
   Alcotest.(check int) "only the hand's level" bare_high_card points
