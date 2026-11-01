@@ -42,6 +42,7 @@ let create ?boss ?(plays = default_plays) ?(discards = default_discards) ~target
 ;;
 
 let board { board; _ } = board
+let with_board board blind = { blind with board }
 let target { target; _ } = target
 let chips { chips; _ } = chips
 let plays_left { plays_left; _ } = plays_left

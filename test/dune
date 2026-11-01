@@ -11,5 +11,6 @@
   test_play
   test_render
   test_run
-  test_shop)
+  test_shop
+  test_tarot)
  (libraries balatro balatro_cli alcotest))

@@ -6,6 +6,13 @@ type error =
   | InvalidPlay of Poker.Hand.error
   | NoJokerSlot
   | NoJokerAt of int
+  | NoConsumableSlot
+  | NoConsumableAt of int
+  | WrongSelection of {
+      min: int;
+      max: int;
+      got: int;
+    }
 [@@deriving show]
 
 type t = {
@@ -51,6 +58,28 @@ let remove_joker idx board =
             jokers = List.filteri (fun i _ -> i <> idx) the_jokers |> List.rev;
           } )
     | None -> Error (NoJokerAt idx)
+  )
+;;
+
+let consumables { consumables; _ } = consumables
+
+let add_consumable consumable board =
+  let { consumables; consumable_slots; _ } = board in
+  if List.length consumables < consumable_slots then
+    Ok { board with consumables = consumables @ [consumable] }
+  else
+    Error NoConsumableSlot
+;;
+
+let remove_consumable idx board =
+  let { consumables; _ } = board in
+  if idx < 0 then
+    Error (NoConsumableAt idx)
+  else (
+    match List.nth_opt consumables idx with
+    | Some consumable ->
+      Ok (consumable, { board with consumables = List.filteri (fun i _ -> i <> idx) consumables })
+    | None -> Error (NoConsumableAt idx)
   )
 ;;
 
@@ -124,3 +153,14 @@ let discard indices board =
   let* selected, kept = select indices board.hand in
   Ok { board with hand = kept; discarded = selected @ board.discarded }
 ;;
+
+(* TODO: check the number of positions against [Consumables.Tarot.selection] first
+   ([WrongSelection]); with no positions there is nothing else to change. Then
+   [validate_indices] checks the positions. One way to rebuild the hand:
+   - the selected positions, sorted, give the selected cards in hand order;
+   - [Consumables.Tarot.change_cards] says what each one became;
+   - [List.combine] pairs each sorted position with its result;
+   - [List.filteri] can't drop and replace at once, but [List.mapi] then
+     [List.filter_map] can: a selected card becomes its result (found with
+     [List.assoc_opt]), the others stay [Some card], and [None] is dropped. *)
+let use_tarot _tarot _indices _board = failwith "TODO: Board.use_tarot"

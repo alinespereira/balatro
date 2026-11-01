@@ -91,6 +91,57 @@ let planet_name = function
   | Eris -> "Éris"
 ;;
 
+let tarot_name = function
+  | Consumables.Tarot.TheFool -> "O Louco"
+  | TheMagician -> "O Mago"
+  | TheHighPriestess -> "A Sacerdotisa"
+  | TheEmpress -> "A Imperatriz"
+  | TheEmperor -> "O Imperador"
+  | TheHierophant -> "O Hierofante"
+  | TheLovers -> "Os Enamorados"
+  | TheChariot -> "O Carro"
+  | Justice -> "A Justiça"
+  | TheHermit -> "O Eremita"
+  | TheWheelOfFortune -> "A Roda da Fortuna"
+  | Strength -> "A Força"
+  | TheHangedMan -> "O Enforcado"
+  | Death -> "A Morte"
+  | Temperance -> "A Temperança"
+  | TheDevil -> "O Diabo"
+  | TheTower -> "A Torre"
+  | TheStar -> "A Estrela"
+  | TheMoon -> "A Lua"
+  | TheSun -> "O Sol"
+  | Judgement -> "O Julgamento"
+  | TheWorld -> "O Mundo"
+;;
+
+let tarot_description = function
+  | Consumables.Tarot.TheStar -> "até 3 cartas viram ♦"
+  | TheMoon -> "até 3 cartas viram ♣"
+  | TheSun -> "até 3 cartas viram ♥"
+  | TheWorld -> "até 3 cartas viram ♠"
+  | Strength -> "até 2 cartas sobem um valor"
+  | TheHangedMan -> "destrói até 2 cartas"
+  | Death -> "de 2 cartas, a da esquerda vira uma cópia da da direita"
+  | TheHermit -> "dobra o dinheiro (no máximo +$20)"
+  | TheFool
+  | TheMagician
+  | TheHighPriestess
+  | TheEmpress
+  | TheEmperor
+  | TheHierophant
+  | TheLovers
+  | TheChariot
+  | Justice
+  | TheWheelOfFortune
+  | Temperance
+  | TheDevil
+  | TheTower
+  | Judgement ->
+    "ainda não faz nada"
+;;
+
 let boss_name = function
   | Boss.Drought -> "A Seca"
   | Hourglass -> "A Ampulheta"
@@ -141,11 +192,27 @@ let planet_hands planet =
   |> String.concat " e "
 ;;
 
+let consumable = function
+  | Consumables.Consumable.Tarot tarot ->
+    Printf.sprintf "%s: %s" (tarot_name tarot) (tarot_description tarot)
+  | Planet planet ->
+    Printf.sprintf "%s: sobe o nível de %s" (planet_name planet) (planet_hands planet)
+  | Spectral spectral -> Consumables.Spectral.show spectral
+;;
+
+let consumables = function
+  | [] -> ""
+  | consumables ->
+    consumables
+    |> List.mapi (fun i c -> Printf.sprintf "  %d. %s" (i + 1) (consumable c))
+    |> String.concat "\n"
+;;
+
 let item = function
   | Shop.JokerItem joker ->
     Printf.sprintf "%s: %s" (joker_name joker) (joker_description joker)
-  | PlanetItem planet ->
-    Printf.sprintf "%s: sobe o nível de %s" (planet_name planet) (planet_hands planet)
+  | PlanetItem planet -> consumable (Consumables.Consumable.Planet planet)
+  | TarotItem tarot -> consumable (Consumables.Consumable.Tarot tarot)
 ;;
 
 let shop (the_shop : Shop.t) =
@@ -215,6 +282,12 @@ let board_error : Board.error -> string = function
     Printf.sprintf "Uma jogada precisa de 1 a 5 cartas, mas tem %d" n
   | NoJokerSlot -> "Não há espaço para mais jokers"
   | NoJokerAt i -> Printf.sprintf "Não há joker na posição %d" (i + 1)
+  | NoConsumableSlot -> "Não há espaço para mais consumíveis"
+  | NoConsumableAt i -> Printf.sprintf "Não há consumível na posição %d" (i + 1)
+  | WrongSelection { min; max; got } when min = max ->
+    Printf.sprintf "Escolha %d cartas, mas você escolheu %d" min got
+  | WrongSelection { min; max; got } ->
+    Printf.sprintf "Escolha de %d a %d cartas, mas você escolheu %d" min max got
 ;;
 
 let blind_error : Blind.error -> string = function
@@ -222,6 +295,7 @@ let blind_error : Blind.error -> string = function
   | NoDiscardsLeft -> "Não há mais descartes nesta rodada"
   | RoundOver -> "A rodada já terminou"
   | BoardError e -> board_error e
+  | NotUsable c -> Printf.sprintf "%s ainda não pode ser usado" (consumable c)
 ;;
 
 let error : Run.error -> string = function
@@ -233,4 +307,5 @@ let error : Run.error -> string = function
   | NotEnoughMoney price -> Printf.sprintf "Dinheiro insuficiente: custa $%d" price
   | ShopError (Shop.NoOfferAt i) -> Printf.sprintf "Não há oferta na posição %d" (i + 1)
   | BoardError e -> board_error e
+  | NotUsable c -> Printf.sprintf "%s ainda não pode ser usado" (consumable c)
 ;;

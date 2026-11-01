@@ -9,13 +9,20 @@ let clear_screen () =
 ;;
 
 (* What the player sees before each prompt: the blind and the hand while playing, the
-   offers while shopping. The jokers show in both. *)
+   offers while shopping. The jokers and the consumables show in both. *)
 let screen (run : Run.t) =
   let jokers = run |> Run.board |> Board.jokers |> Render.jokers in
+  let consumables = run |> Run.board |> Board.consumables |> Render.consumables in
   match Run.phase run with
   | Run.Playing ->
-    [Render.status run; jokers; run |> Run.board |> Board.hand |> Render.hand]
-  | Shopping { shop; _ } -> [Render.money (Run.money run); jokers; Render.shop shop]
+    [
+      Render.status run;
+      jokers;
+      consumables;
+      run |> Run.board |> Board.hand |> Render.hand;
+    ]
+  | Shopping { shop; _ } ->
+    [Render.money (Run.money run); jokers; consumables; Render.shop shop]
 ;;
 
 let rec loop ?(help = false) rng (run : Run.t) : unit =
@@ -61,6 +68,7 @@ let rec loop ?(help = false) rng (run : Run.t) : unit =
      | Ok (Command.Discard indices) -> continue_with (Run.discard indices run)
      | Ok (Command.Buy idx) -> continue_with (Run.buy idx run)
      | Ok (Command.Sell idx) -> continue_with (Run.sell_joker idx run)
+     | Ok (Command.Use (idx, cards)) -> continue_with (Run.use_consumable idx cards run)
      | Ok Command.Reroll -> continue_with (Run.reroll rng run)
      | Ok Command.Leave -> continue_with (Run.leave_shop rng run))
 ;;
