@@ -35,8 +35,10 @@ let debuffs boss card =
   | Giant, _ ->
     false
   | Eclipse boss_suit, { Card.suit = card_suit; _ } -> boss_suit = card_suit
-  | Fog, { Card.rank; _ } -> List.mem rank [Card.Jack; Card.Queen; Card.King]
-  | Muzzle, _ -> false
+  | Fog, { Card.rank = Card.Jack | Card.Queen | Card.King; _ } -> true
+  | Fog, _
+  | Muzzle, _ ->
+    false
 ;;
 
 let disables_jokers = function

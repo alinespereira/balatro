@@ -93,11 +93,11 @@ let planet_name = function
 
 let boss_name = function
   | Boss.Drought -> "A Seca"
-  | Boss.Hourglass -> "A Ampulheta"
-  | Boss.Giant -> "O Gigante"
-  | Boss.Eclipse _ -> "O Eclipse"
-  | Boss.Fog -> "A Névoa"
-  | Boss.Muzzle -> "A Mordaça"
+  | Hourglass -> "A Ampulheta"
+  | Giant -> "O Gigante"
+  | Eclipse _ -> "O Eclipse"
+  | Fog -> "A Névoa"
+  | Muzzle -> "A Mordaça"
 ;;
 
 let boss_description = function
