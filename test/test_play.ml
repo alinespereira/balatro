@@ -14,10 +14,7 @@ let check_score name levels cards ~chips ~mult =
 ;;
 
 let pair_of_aces = [Card.create Hearts Ace; Card.create Spades Ace]
-
-let test_hand () =
-  Alcotest.check hand "pair of aces" Pair (Play.hand (play pair_of_aces))
-;;
+let test_hand () = Alcotest.check hand "pair of aces" Pair (Play.hand (play pair_of_aces))
 
 let test_score () =
   let levels = Poker.Levels.initial in

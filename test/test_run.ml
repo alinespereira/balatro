@@ -19,9 +19,7 @@ let expect_error name expected = function
   | Ok _ -> Alcotest.fail (name ^ ": expected " ^ Run.show_error expected)
 ;;
 
-let check_playing name run =
-  Alcotest.(check bool) name true (Run.phase run = Run.Playing)
-;;
+let check_playing name run = Alcotest.(check bool) name true (Run.phase run = Run.Playing)
 
 (* One state per test, shared by every step: a fresh state with the same seed would
    draw the same shop offers again and again. *)
@@ -75,8 +73,7 @@ let test_target () =
     let boss = Run.target ~ante Run.Boss in
     let name what = Printf.sprintf "ante %d: %s" ante what in
     Alcotest.(check bool) (name "small < big < boss") true (small < big && big < boss);
-    if ante > 1
-    then
+    if ante > 1 then
       Alcotest.(check bool)
         (name "grows from the last boss")
         true
