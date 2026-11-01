@@ -11,6 +11,11 @@ let hand { evaluation; _ } = evaluation.category
 let scoring_cards { evaluation; _ } = evaluation.scoring_cards
 let cards { cards; _ } = cards
 
+(* TODO: keep in [evaluation.scoring_cards] only the cards that are not [debuffed]
+   ([List.filter]). The evaluation is a record inside a record, so it takes two record
+   updates. *)
+let without _debuffed _play = failwith "TODO: Play.without"
+
 let card_chips (card : Card.t) =
   match card.rank with
   | Card.Jack

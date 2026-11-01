@@ -6,6 +6,7 @@ type t = private {
   plays_left: int;
   discards_left: int;
   chips: int;
+  boss: Boss.t option; (** The boss of a [Boss] blind; [None] for the others. *)
 }
 
 type status =
@@ -21,11 +22,14 @@ type error =
   | BoardError of Board.error
 [@@deriving show]
 
-(** Padrão: 4 jogadas, 3 descartes. *)
-val create : ?plays:int -> ?discards:int -> target:int -> Board.t -> t
+(** Padrão: 4 jogadas, 3 descartes. With a [boss], the plays, discards and target go
+    through [Boss.limits] first. *)
+val create : ?boss:Boss.t -> ?plays:int -> ?discards:int -> target:int -> Board.t -> t
 
 (** Joga as cartas dos índices; devolve a jogada, os pontos dela e a rodada nova. Os
-    jokers do board entram na pontuação, da esquerda para a direita. *)
+    jokers do board entram na pontuação, da esquerda para a direita. With a boss, the cards it debuffs do
+    not score and are not seen by the jokers, and [Boss.disables_jokers] leaves the
+    jokers out. *)
 val play : Poker.Levels.t -> int list -> t -> (Play.t * int * t, error) result
 
 val discard : int list -> t -> (t, error) result
@@ -35,3 +39,4 @@ val target : t -> int
 val chips : t -> int
 val plays_left : t -> int
 val discards_left : t -> int
+val boss : t -> Boss.t option

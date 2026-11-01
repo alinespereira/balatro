@@ -24,11 +24,12 @@ type phase =
       board: Board.t;
     }
 
-(** The current ante and stage, the blind being played, the hand levels, the money and
-    the phase. *)
+(** The current ante and stage, the boss of the ante, the blind being played, the hand
+    levels, the money and the phase. *)
 type t = private {
   ante: int;
   stage: stage;
+  boss: Boss.t; (** Drawn when the ante starts; only its [Boss] blind uses it. *)
   blind: Blind.t;
   levels: Poker.Levels.t;
   money: int;
@@ -70,13 +71,17 @@ val starting_money : int
     $4 for [Big] and $5 for [Boss]. *)
 val reward : stage -> int
 
-(** A run at the small blind of ante 1, every hand at level 1, with [starting_money].
+(** A run at the small blind of ante 1, with a random boss for ante 1, every hand at level 1, with [starting_money].
     [target] sets the points each blind needs and defaults to {!target}; tests use it
     to make blinds easy to win or impossible to beat. *)
 val create : ?target:(ante:int -> stage -> int) -> Random.State.t -> Deck.color -> t
 
 val ante : t -> int
 val stage : t -> stage
+
+(** The boss of the current ante, known from its [Small] blind on. *)
+val boss : t -> Boss.t
+
 val blind : t -> Blind.t
 val levels : t -> Poker.Levels.t
 val money : t -> int
@@ -101,8 +106,9 @@ val discard : int list -> t -> (t, error) result
 val cash_out : Random.State.t -> t -> (Payout.t * t, error) result
 
 (** Closes the shop and moves on to the next blind: [Small] to [Big], [Big] to [Boss],
-    and [Boss] to the [Small] blind of the next ante. The new blind gets the shop's
-    board, reset and shuffled with the given state. *)
+    and [Boss] to the [Small] blind of the next ante, which draws a new boss. The new
+    blind gets the shop's board, reset and shuffled with the given state, and the
+    [Boss] blind gets the boss of the ante. *)
 val leave_shop : Random.State.t -> t -> (t, error) result
 
 (** Buys the offer at the given position (0-based) if there is money for it. A joker

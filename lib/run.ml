@@ -14,6 +14,7 @@ type phase =
 type t = {
   ante: int;
   stage: stage;
+  boss: Boss.t;
   blind: Blind.t;
   levels: Poker.Levels.t;
   money: int;
@@ -80,6 +81,7 @@ let create ?(target = target) rng color =
   {
     ante = run_ante;
     stage = run_stage;
+    boss = Boss.random rng;
     blind = run_blind;
     levels = Poker.Levels.initial;
     money = starting_money;
@@ -90,6 +92,7 @@ let create ?(target = target) rng color =
 
 let ante { ante; _ } = ante
 let stage { stage; _ } = stage
+let boss { boss; _ } = boss
 let blind { blind; _ } = blind
 let levels { levels; _ } = levels
 let money { money; _ } = money
@@ -169,20 +172,35 @@ let leave_shop rng run =
    phase = Shopping { board = the_board; _ };
    ante = the_ante;
    stage = the_stage;
+   boss = the_boss;
    target_of;
    _;
   } ->
     (match advance the_ante the_stage with
      | None -> Error RunOver
      | Some (new_ante, new_stage) ->
+       let new_boss =
+         if new_ante = the_ante then
+           the_boss
+         else
+           Boss.random rng
+       in
        let new_target = target_of ~ante:new_ante new_stage in
        let new_board = Board.reset rng the_board in
-       let new_blind = Blind.create ~target:new_target new_board in
+       let blind_boss =
+         match new_stage with
+         | Boss -> Some new_boss
+         | Small
+         | Big ->
+           None
+       in
+       let new_blind = Blind.create ?boss:blind_boss ~target:new_target new_board in
        Ok
          {
            run with
            ante = new_ante;
            stage = new_stage;
+           boss = new_boss;
            blind = new_blind;
            phase = Playing;
          })

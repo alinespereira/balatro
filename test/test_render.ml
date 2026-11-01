@@ -32,6 +32,42 @@ let test_hand_name () =
     Poker.Hand.all
 ;;
 
+let distinct strings = List.length (List.sort_uniq String.compare strings)
+
+(* Whether [sub] appears somewhere in [s]. *)
+let contains ~sub s =
+  let n = String.length sub in
+  let rec from i =
+    i + n <= String.length s && (String.sub s i n = sub || from (i + 1))
+  in
+  from 0
+;;
+
+let test_boss () =
+  let eclipses, others =
+    List.partition
+      (function
+        | Boss.Eclipse _ -> true
+        | _ -> false)
+      Boss.all
+  in
+  (* Every eclipse has the same name, and every other boss a name of its own. *)
+  Alcotest.(check int) "one name for the eclipses" 1 (distinct (List.map Render.boss_name eclipses));
+  Alcotest.(check int)
+    "a name for each of the others"
+    (List.length others + 1)
+    (distinct (List.map Render.boss_name (List.hd eclipses :: others)));
+  (* Every boss, each eclipse included, says what it does in its own words. *)
+  Alcotest.(check int)
+    "a description for each boss"
+    (List.length Boss.all)
+    (distinct (List.map Render.boss_description Boss.all));
+  Alcotest.(check bool)
+    "the eclipse names its suit"
+    true
+    (contains ~sub:"♦" (Render.boss_description (Boss.Eclipse Card.Diamonds)))
+;;
+
 let test_play () =
   let cards = [Card.create Card.Hearts Card.King; Card.create Card.Spades Card.King] in
   match Play.make cards with
@@ -55,6 +91,10 @@ let test_status () =
     [
       "Ante: 1";
       "Rodada: Small Blind";
+      Printf.sprintf
+        "Chefe: %s (%s)"
+        (Render.boss_name (Run.boss run))
+        (Render.boss_description (Run.boss run));
       Printf.sprintf "Meta: %d" (Run.target ~ante:1 Run.Small);
       "";
       "Fichas: 0";
@@ -82,6 +122,7 @@ let () =
           Alcotest.test_case "card" `Quick test_card;
           Alcotest.test_case "hand" `Quick test_hand;
           Alcotest.test_case "stage" `Quick test_stage;
+          Alcotest.test_case "boss" `Quick test_boss;
           Alcotest.test_case "hand name" `Quick test_hand_name;
           Alcotest.test_case "play" `Quick test_play;
           Alcotest.test_case "payout" `Quick test_payout;
