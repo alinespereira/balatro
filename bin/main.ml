@@ -19,7 +19,7 @@ let screen (run : Run.t) =
 ;;
 
 let rec loop ?(help = false) rng (run : Run.t) : unit =
-  wait ();
+  if not help then wait ();
   clear_screen ();
   if help then print_endline Command.help;
   List.iter print_endline (screen run);
@@ -38,9 +38,7 @@ let rec loop ?(help = false) rng (run : Run.t) : unit =
      | Error e ->
        print_endline (Command.error_message e);
        loop rng run
-     | Ok Command.Help ->
-       print_endline Command.help;
-       loop rng run
+     | Ok Command.Help -> loop rng run ~help:true
      | Ok Command.Quit -> ()
      | Ok (Command.Play indices) ->
        (match Run.play indices run with
