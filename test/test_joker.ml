@@ -16,10 +16,7 @@ let two_pair =
   play Card.[create Spades Ace; create Hearts Ace; create Spades King; create Hearts King]
 ;;
 
-let three_of_a_kind =
-  play Card.[create Spades Ace; create Hearts Ace; create Clubs Ace]
-;;
-
+let three_of_a_kind = play Card.[create Spades Ace; create Hearts Ace; create Clubs Ace]
 let high_card = play Card.[create Spades Ace; create Hearts King]
 
 (* A pair played with two kickers: four cards played, two of them score. *)
