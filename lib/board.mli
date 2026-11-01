@@ -31,6 +31,7 @@ val create : Random.State.t -> Deck.color -> t
 (** Puts every card back in the deck (from the hand and the discards) and shuffles
     it, for the next blind. Jokers, consumables and slots stay as they are. *)
 val reset : Random.State.t -> t -> t
+
 val deck : t -> Deck.t
 val hand : t -> Card.t list
 

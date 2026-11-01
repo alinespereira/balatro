@@ -166,12 +166,12 @@ let leave_shop rng run =
   match run with
   | { phase = Playing; _ } -> Error NotInShop
   | {
-      phase = Shopping { board = the_board; _ };
-      ante = the_ante;
-      stage = the_stage;
-      target_of;
-      _;
-    } ->
+   phase = Shopping { board = the_board; _ };
+   ante = the_ante;
+   stage = the_stage;
+   target_of;
+   _;
+  } ->
     (match advance the_ante the_stage with
      | None -> Error RunOver
      | Some (new_ante, new_stage) ->
