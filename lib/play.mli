@@ -13,5 +13,10 @@ val scoring_cards : t -> Card.t list
     order they were played. *)
 val cards : t -> Card.t list
 
+(** The same play without the scoring cards that [debuffed] picks: they stay in
+    [cards], but no longer score. The hand stays the same, so a pair with a debuffed
+    card is still a pair. *)
+val without : (Card.t -> bool) -> t -> t
+
 (** Chips and mult of the play before jokers, at the hand's current level. *)
 val score : Poker.Levels.t -> t -> Score.t

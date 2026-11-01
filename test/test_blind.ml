@@ -2,9 +2,19 @@ open Balatro
 
 let levels = Poker.Levels.initial
 
-let fresh_blind ?plays ?discards ~target color =
+let fresh_board ?(jokers = []) color =
   let board = Board.create (Random.State.make [| 42 |]) color in
-  Blind.create ?plays ?discards ~target board
+  List.fold_left
+    (fun board joker ->
+       match Board.add_joker joker board with
+       | Ok board -> board
+       | Error e -> Alcotest.fail (Board.show_error e))
+    board
+    jokers
+;;
+
+let fresh_blind ?boss ?jokers ?plays ?discards ~target color =
+  Blind.create ?boss ?plays ?discards ~target (fresh_board ?jokers color)
 ;;
 
 (* Testables tell Alcotest how to compare and print values of our own types. [status]
@@ -116,6 +126,69 @@ let test_board_errors color =
   expect_play_error [0; 0] blind (Blind.BoardError (Board.DuplicateIndex 0))
 ;;
 
+(* Bosses. *)
+
+let boss = Alcotest.testable Boss.pp Boss.equal
+
+(* Points of a high card that no card scores for: the level alone. *)
+let bare_high_card =
+  Score.total (Poker.Levels.get Poker.Hand.HighCard levels).Poker.Levels.score
+;;
+
+let first_card blind = List.hd (Board.hand (Blind.board blind))
+
+let suit_joker = function
+  | Card.Diamonds -> Joker.GreedyJoker
+  | Card.Hearts -> Joker.LustyJoker
+  | Card.Spades -> Joker.WrathfulJoker
+  | Card.Clubs -> Joker.GluttonousJoker
+;;
+
+let test_no_boss () =
+  let blind = fresh_blind ~target:300 Deck.Red in
+  Alcotest.(check (option boss)) "no boss" None (Blind.boss blind)
+;;
+
+let test_boss_limits () =
+  let drought = fresh_blind ~boss:Boss.Drought ~target:300 Deck.Red in
+  Alcotest.(check (option boss)) "the boss" (Some Boss.Drought) (Blind.boss drought);
+  Alcotest.(check int) "drought: no discards" 0 (Blind.discards_left drought);
+  expect_discard_error [0] drought Blind.NoDiscardsLeft;
+  let hourglass = fresh_blind ~boss:Boss.Hourglass ~target:300 Deck.Red in
+  Alcotest.(check int) "hourglass: 3 plays" 3 (Blind.plays_left hourglass);
+  let giant = fresh_blind ~boss:Boss.Giant ~target:300 Deck.Red in
+  Alcotest.(check int) "giant: target 450" 450 (Blind.target giant)
+;;
+
+(* Under an eclipse of its own suit, a lone card scores nothing, and the joker of that
+   suit does not see it either. *)
+let test_eclipse () =
+  let suit = (first_card (fresh_blind ~target:1_000 Deck.Red)).Card.suit in
+  let blind =
+    fresh_blind
+      ~boss:(Boss.Eclipse suit)
+      ~jokers:[suit_joker suit]
+      ~target:1_000
+      Deck.Red
+  in
+  let _, points, _ = play_ok [0] blind in
+  Alcotest.(check int) "only the hand's level" bare_high_card points
+;;
+
+let test_muzzle () =
+  let plain = fresh_blind ~target:1_000 Deck.Red in
+  let muzzled =
+    fresh_blind
+      ~boss:Boss.Muzzle
+      ~jokers:[Joker.Joker; Joker.Cavendish]
+      ~target:1_000
+      Deck.Red
+  in
+  let _, plain_points, _ = play_ok [0; 1] plain in
+  let _, muzzled_points, _ = play_ok [0; 1] muzzled in
+  Alcotest.(check int) "as if there were no jokers" plain_points muzzled_points
+;;
+
 let () =
   let color_name = function
     | Deck.Red -> "red"
@@ -135,5 +208,17 @@ let () =
       ]
   in
   let colors = [Deck.Red; Deck.Blue; Deck.Green] in
-  Alcotest.run "Blind" (List.map (fun color -> color_name color, cases color) colors)
+  let bosses =
+    List.map
+      (fun (name, test) -> Alcotest.test_case name `Quick test)
+      [
+        "no boss", test_no_boss;
+        "limits", test_boss_limits;
+        "eclipse", test_eclipse;
+        "muzzle", test_muzzle;
+      ]
+  in
+  Alcotest.run
+    "Blind"
+    (List.map (fun color -> color_name color, cases color) colors @ ["boss", bosses])
 ;;
