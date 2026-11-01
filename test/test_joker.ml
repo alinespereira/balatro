@@ -139,11 +139,7 @@ let test_react () =
   check_react "bus: discard" Joker.Discarded (bus 2) (Some (bus 2));
   let runner chips = Joker.Runner { chips } in
   check_react "runner: straight" (played straight) (runner 15) (Some (runner 30));
-  check_react
-    "runner: no straight"
-    (played pair_of_hearts)
-    (runner 15)
-    (Some (runner 15));
+  check_react "runner: no straight" (played pair_of_hearts) (runner 15) (Some (runner 15));
   check_react "runner: discard" Joker.Discarded (runner 15) (Some (runner 15));
   let ice_cream chips = Joker.IceCream { chips } in
   check_react
@@ -184,11 +180,7 @@ let test_fresh_and_same_kind () =
   let same name expected a b =
     Alcotest.(check bool) name expected (Joker.same_kind a b)
   in
-  same
-    "green jokers"
-    true
-    (Joker.GreenJoker { mult = 5 })
-    (Joker.GreenJoker { mult = 0 });
+  same "green jokers" true (Joker.GreenJoker { mult = 5 }) (Joker.GreenJoker { mult = 0 });
   same
     "runner and ice cream"
     false

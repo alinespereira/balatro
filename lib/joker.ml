@@ -46,16 +46,8 @@ let fresh = function
   | RideTheBus _ -> RideTheBus { mult = 0 }
   | Runner _ -> Runner { chips = 0 }
   | IceCream _ -> IceCream { chips = 100 }
-  | ( Joker
-    | GreedyJoker
-    | LustyJoker
-    | WrathfulJoker
-    | GluttonousJoker
-    | JollyJoker
-    | HalfJoker
-    | Banner
-    | AbstractJoker
-    | Cavendish ) as joker ->
+  | ( Joker | GreedyJoker | LustyJoker | WrathfulJoker | GluttonousJoker | JollyJoker
+    | HalfJoker | Banner | AbstractJoker | Cavendish ) as joker ->
     joker
 ;;
 

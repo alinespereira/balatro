@@ -227,9 +227,7 @@ let test_jokers_react color =
 (* A Green Joker at +2 adds 2 to the mult of the play. *)
 let test_grown_joker_scores color =
   let plain = fresh_blind ~target:100_000 color in
-  let grown =
-    fresh_blind ~jokers:Joker.[GreenJoker { mult = 2 }] ~target:100_000 color
-  in
+  let grown = fresh_blind ~jokers:Joker.[GreenJoker { mult = 2 }] ~target:100_000 color in
   let play, plain_points, _ = play_ok [0] plain in
   let _, grown_points, _ = play_ok [0] grown in
   let { Score.chips; Score.mult } = Play.score levels play in

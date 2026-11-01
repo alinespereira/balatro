@@ -86,11 +86,7 @@ let test_available () =
   check_offered "cavendish is not" true (joker Joker.Cavendish) owned;
   (* A joker that has grown is still the same joker, so the fresh one is left out. *)
   let grown = Shop.available ~jokers:Joker.[GreenJoker { mult = 7 }] ~levels in
-  check_offered
-    "green joker is owned"
-    false
-    (joker (Joker.GreenJoker { mult = 0 }))
-    grown;
+  check_offered "green joker is owned" false (joker (Joker.GreenJoker { mult = 0 })) grown;
   (* After a flush five, Eris shows up; the other secret planets stay hidden. *)
   let levels = Poker.Levels.record_play Poker.Hand.FlushFive levels in
   let after = Shop.available ~jokers:[] ~levels in
