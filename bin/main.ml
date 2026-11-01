@@ -1,4 +1,5 @@
 open Balatro
+open Balatro_cli
 
 let wait () = Unix.sleepf 1.5
 
@@ -15,7 +16,7 @@ let screen (run : Run.t) =
   | Run.Playing ->
     [Render.status run; jokers; run |> Run.board |> Board.hand |> Render.hand]
   | Shopping { shop; _ } ->
-    [Printf.sprintf "Dinheiro: $%d" (Run.money run); jokers; Render.shop shop]
+    [Render.money (Run.money run); jokers; Render.shop shop]
 ;;
 
 let rec loop ?(help = false) rng (run : Run.t) : unit =

@@ -2,11 +2,13 @@
  (names
   test_blind
   test_board
+  test_command
   test_hand
   test_joker
   test_money
   test_planet
   test_play
+  test_render
   test_run
   test_shop)
- (libraries balatro alcotest))
+ (libraries balatro balatro_cli alcotest))

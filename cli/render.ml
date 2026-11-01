@@ -91,11 +91,35 @@ let planet_name = function
   | Eris -> "Éris"
 ;;
 
+let stage = function
+  | Run.Small -> "Small Blind"
+  | Big -> "Big Blind"
+  | Boss -> "Boss Blind"
+;;
+
+let hand_name = function
+  | Poker.Hand.HighCard -> "Carta alta"
+  | Pair -> "Par"
+  | TwoPair -> "Dois pares"
+  | ThreeOfAKind -> "Trinca"
+  | Straight -> "Sequência"
+  | Flush -> "Flush"
+  | FullHouse -> "Full house"
+  | FourOfAKind -> "Quadra"
+  | StraightFlush -> "Straight flush"
+  | RoyalFlush -> "Royal flush"
+  | FiveOfAKind -> "Quina"
+  | FlushHouse -> "Flush house"
+  | FlushFive -> "Flush quina"
+;;
+
+let money amount = Printf.sprintf "Dinheiro: $%d" amount
+
 (* The hands a planet levels up: Neptune is the only one with two. *)
 let planet_hands planet =
   Poker.Hand.all
   |> List.filter (fun hand -> Poker.Hand.planet hand = planet)
-  |> List.map Poker.Hand.show
+  |> List.map hand_name
   |> String.concat " e "
 ;;
 
@@ -118,52 +142,41 @@ let shop (the_shop : Shop.t) =
 ;;
 
 let status run =
-  let { Run.ante; Run.stage; Run.blind; Run.money; _ } = run in
+  let { Run.ante; Run.stage = current; Run.blind; Run.money = cash; _ } = run in
   let { Blind.target; Blind.plays_left; Blind.discards_left; Blind.chips; _ } = blind in
-  Printf.sprintf
-    {|
-    Ante: %d
-    Stage: %s
-    Target: %d
-
-    Chips: %d
-    Plays: %d
-    Discards: %d
-    Money: $%d
-  |}
-    ante
-    (Run.show_stage stage)
-    target
-    chips
-    plays_left
-    discards_left
-    money
+  String.concat
+    "\n"
+    [
+      Printf.sprintf "Ante: %d" ante;
+      Printf.sprintf "Rodada: %s" (stage current);
+      Printf.sprintf "Meta: %d" target;
+      "";
+      Printf.sprintf "Fichas: %d" chips;
+      Printf.sprintf "Jogadas: %d" plays_left;
+      Printf.sprintf "Descartes: %d" discards_left;
+      money cash;
+    ]
 ;;
 
 let play play points =
-  let hand = Play.hand play |> Poker.Hand.show in
-  Printf.sprintf
-    {|
-    Hand: %s
-    Chips: %d
-  |}
-    hand
-    points
+  String.concat
+    "\n"
+    [
+      Printf.sprintf "Mão: %s" (hand_name (Play.hand play));
+      Printf.sprintf "Pontos: %d" points;
+    ]
 ;;
 
 let payout payout =
   let { Payout.blind; Payout.plays; Payout.interest } = payout in
-  Printf.sprintf
-    {|
-    Recompensa do blind: $%d
-    Jogadas restantes: $%d
-    Juros: $%d
-    Total: $%d
-  |}
-    blind
-    plays
-    interest
-    (Payout.total payout)
+  String.concat
+    "\n"
+    [
+      Printf.sprintf "Recompensa do blind: $%d" blind;
+      Printf.sprintf "Jogadas restantes: $%d" plays;
+      Printf.sprintf "Juros: $%d" interest;
+      Printf.sprintf "Total: $%d" (Payout.total payout);
+    ]
 ;;
 
 let board_error : Board.error -> string = function
