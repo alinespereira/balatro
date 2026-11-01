@@ -30,13 +30,30 @@ jobs:
               --generate-notes
           fi
 
-  build-windows:
-    name: Build Windows executable
+  build:
+    # One job per operating system. The matrix below makes GitHub run the
+    # same steps three times, each time with a different value of
+    # `matrix.os` (the runner) and `matrix.suffix` (the asset name ending).
+    name: Build ${{ matrix.name }} executable
     needs: create-release
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     permissions:
       contents: write
+    strategy:
+      # Keep building the other systems even if one of them fails.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            suffix: windows.exe
+          - name: Linux
+            os: ubuntu-latest
+            suffix: linux-x86_64
+          - name: macOS
+            os: macos-latest
+            suffix: macos-arm64
 
     steps:
       - name: Checkout repository
@@ -58,7 +75,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
+          SUFFIX: ${{ matrix.suffix }}
+        # dune names the binary main.exe on every system; the extension only
+        # matters on Windows, so the Linux/macOS assets drop it.
         run: |
-          asset="balatro-${TAG}-windows.exe"
+          asset="balatro-${TAG}-${SUFFIX}"
           cp _build/default/bin/main.exe "$asset"
           gh release upload "$TAG" "$asset" --repo "$GITHUB_REPOSITORY" --clobber
