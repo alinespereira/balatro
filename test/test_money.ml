@@ -17,8 +17,11 @@ let test_interest () =
   let interest money = (payout ~money ()).Payout.interest in
   List.iter
     (fun (money, expected) ->
-       Alcotest.(check int) (Printf.sprintf "interest on $%d" money) expected (interest money))
-    [ 0, 0; 4, 0; 5, 1; 9, 1; 24, 4; 25, Payout.max_interest; 1_000, Payout.max_interest ]
+       Alcotest.(check int)
+         (Printf.sprintf "interest on $%d" money)
+         expected
+         (interest money))
+    [0, 0; 4, 0; 5, 1; 9, 1; 24, 4; 25, Payout.max_interest; 1_000, Payout.max_interest]
 ;;
 
 let test_rewards () =
@@ -36,13 +39,16 @@ let test_starting_money () =
 let () =
   Alcotest.run
     "Money"
-    [ ( "payout"
-      , [ Alcotest.test_case "parts" `Quick test_parts
-        ; Alcotest.test_case "interest" `Quick test_interest
-        ] )
-    ; ( "run"
-      , [ Alcotest.test_case "rewards" `Quick test_rewards
-        ; Alcotest.test_case "starting money" `Quick test_starting_money
-        ] )
+    [
+      ( "payout",
+        [
+          Alcotest.test_case "parts" `Quick test_parts;
+          Alcotest.test_case "interest" `Quick test_interest;
+        ] );
+      ( "run",
+        [
+          Alcotest.test_case "rewards" `Quick test_rewards;
+          Alcotest.test_case "starting money" `Quick test_starting_money;
+        ] );
     ]
 ;;
