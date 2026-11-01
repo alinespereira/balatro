@@ -93,7 +93,7 @@ let test_status () =
       "Ante: 1";
       "Rodada: Small Blind";
       Printf.sprintf
-        "Chefe: %s (%s)"
+        "Chefe do ante: %s (%s)"
         (Render.boss_name (Run.boss run))
         (Render.boss_description (Run.boss run));
       Printf.sprintf "Meta: %d" (Run.target ~ante:1 Run.Small);
@@ -104,6 +104,30 @@ let test_status () =
       Printf.sprintf "Dinheiro: $%d" Run.starting_money;
     ]
     lines
+;;
+
+(* The boss is only a preview during the Small and Big blinds. *)
+let test_status_boss_label () =
+  let rng = rng () in
+  let ok = function
+    | Ok value -> value
+    | Error e -> Alcotest.fail (Run.show_error e)
+  in
+  let next run =
+    let _, shopping = ok (Run.cash_out rng run) in
+    ok (Run.leave_shop rng shopping)
+  in
+  let label run = List.nth (String.split_on_char '\n' (Render.status run)) 2 in
+  let small = Run.create ~target:(fun ~ante:_ _ -> 0) rng Deck.Red in
+  let boss = Run.boss small in
+  let described =
+    Printf.sprintf "%s (%s)" (Render.boss_name boss) (Render.boss_description boss)
+  in
+  let big = next small in
+  let boss_blind = next big in
+  Alcotest.(check string) "small blind" ("Chefe do ante: " ^ described) (label small);
+  Alcotest.(check string) "big blind" ("Chefe do ante: " ^ described) (label big);
+  Alcotest.(check string) "boss blind" ("Chefe: " ^ described) (label boss_blind)
 ;;
 
 let test_hand () =
@@ -128,6 +152,7 @@ let () =
           Alcotest.test_case "play" `Quick test_play;
           Alcotest.test_case "payout" `Quick test_payout;
           Alcotest.test_case "status" `Quick test_status;
+          Alcotest.test_case "boss label" `Quick test_status_boss_label;
         ] );
     ]
 ;;

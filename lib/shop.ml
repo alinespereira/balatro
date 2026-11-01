@@ -23,10 +23,16 @@ let all_items =
   @ List.map (fun planet -> PlanetItem planet) Consumables.Planet.all
 ;;
 
-let draw_offers rng = all_items |> Util.shuffle rng |> List.take offer_count
+(* TODO: filter [all_items]. For now it returns everything, so the shop still works. *)
+let available ~jokers ~levels =
+  ignore (jokers, levels);
+  all_items
+;;
 
-let create rng =
-  let offers = draw_offers rng in
+let draw_offers rng from = from |> Util.shuffle rng |> List.take offer_count
+
+let create ?(from = all_items) rng =
+  let offers = draw_offers rng from in
   { offers; reroll_cost = base_reroll_cost }
 ;;
 
@@ -42,8 +48,8 @@ let take idx shop =
   )
 ;;
 
-let reroll rng shop =
-  let new_offers = draw_offers rng in
+let reroll ?(from = all_items) rng shop =
+  let new_offers = draw_offers rng from in
   let { reroll_cost; _ } = shop in
   { offers = new_offers; reroll_cost = reroll_cost + 1 }
 ;;

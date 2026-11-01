@@ -24,6 +24,16 @@ val base_score : t -> Score.t
     Neptune. *)
 val planet : t -> Consumables.Planet.t
 
+(** Whether the hand is secret: five of a kind, flush house and flush five. Their
+    planets (Planet X, Ceres and Eris) only show up in the shop after the hand has been
+    played once. *)
+val is_secret : t -> bool
+
+(** Whether a hand of this category always has a pair inside it: two cards of the same
+    rank. A two pair, a three of a kind or a full house contain a pair; a straight or a
+    flush do not. *)
+val contains_pair : t -> bool
+
 type evaluation = {
   category: t;
   scoring_cards: Card.t list;

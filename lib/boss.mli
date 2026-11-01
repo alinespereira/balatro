@@ -25,8 +25,9 @@ type limits = {
 }
 [@@deriving show, eq]
 
-(** One of [all], drawn with [rng]. *)
-val random : Random.State.t -> t
+(** One of [all], drawn with [rng], that is not in [avoid] (by default, empty). If
+    every boss is in [avoid], it draws from all of them again. *)
+val random : ?avoid:t list -> Random.State.t -> t
 
 (** The limits of a blind with this boss, given the limits it would have without one. *)
 val limits : t -> limits -> limits

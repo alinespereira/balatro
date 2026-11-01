@@ -239,3 +239,9 @@ let evaluate cards =
     Ok { category; scoring_cards = scoring_cards category cards }
   )
 ;;
+
+(* TODO: true only for the three secret hands. *)
+let is_secret _hand = failwith "TODO: Hand.is_secret"
+
+(* TODO: true for [Pair] and for every hand that has two cards of the same rank. *)
+let contains_pair _hand = failwith "TODO: Hand.contains_pair"

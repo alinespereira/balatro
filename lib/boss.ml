@@ -14,7 +14,12 @@ type limits = {
 }
 [@@deriving show, eq]
 
-let random rng = List.nth all (Random.State.int rng (List.length all))
+(* TODO: draw only from the bosses that are not in [avoid], unless that leaves none.
+   For now it ignores [avoid]. *)
+let random ?(avoid = []) rng =
+  ignore avoid;
+  List.nth all (Random.State.int rng (List.length all))
+;;
 
 let limits boss limits =
   let { plays = the_plays; target = the_target; _ } = limits in

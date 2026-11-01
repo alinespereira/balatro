@@ -29,6 +29,23 @@ let test_random () =
     (List.exists (fun b -> not (Boss.equal b (List.hd drawn))) drawn)
 ;;
 
+let boss = Alcotest.testable Boss.pp Boss.equal
+
+let test_random_avoid () =
+  let rng = Random.State.make [| 42 |] in
+  let avoid = Boss.[Fog; Muzzle; Drought] in
+  List.init 200 (fun _ -> Boss.random ~avoid rng)
+  |> List.iter (fun b ->
+    Alcotest.(check bool) (Boss.show b ^ " is not avoided") false (List.mem b avoid));
+  (* Only the giant is left, so it is always the one drawn. *)
+  let all_but_giant = List.filter (fun b -> not (Boss.equal b Boss.Giant)) Boss.all in
+  List.init 20 (fun _ -> Boss.random ~avoid:all_but_giant rng)
+  |> List.iter (Alcotest.check boss "the only one left" Boss.Giant);
+  (* Every boss avoided: it draws from all of them again. *)
+  List.init 20 (fun _ -> Boss.random ~avoid:Boss.all rng)
+  |> List.iter (fun b -> Alcotest.(check bool) (Boss.show b) true (List.mem b Boss.all))
+;;
+
 let test_limits () =
   let check name expected b =
     Alcotest.check limits name expected (Boss.limits b default)
@@ -94,6 +111,7 @@ let () =
         [
           case "all" test_all;
           case "random" test_random;
+          case "random avoids" test_random_avoid;
           case "limits" test_limits;
           case "debuffs" test_debuffs;
           case "disables jokers" test_disables_jokers;
