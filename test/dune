@@ -7,5 +7,6 @@
   test_money
   test_planet
   test_play
+  test_run
   test_shop)
  (libraries balatro))
