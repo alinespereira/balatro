@@ -234,13 +234,13 @@ let reroll rng run =
   | Playing -> Error NotInShop
   | Shopping { shop; board } ->
     let { Shop.reroll_cost; _ } = shop in
-    if reroll_cost < the_money then
+    if reroll_cost > the_money then
+      Error (NotEnoughMoney reroll_cost)
+    else
       Ok
         {
           run with
           money = the_money - reroll_cost;
           phase = Shopping { shop = Shop.reroll rng shop; board };
         }
-    else
-      Error (NotEnoughMoney reroll_cost)
 ;;
