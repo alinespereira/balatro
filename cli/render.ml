@@ -91,12 +91,23 @@ let planet_name = function
   | Eris -> "Éris"
 ;;
 
-(* TODO: one name per boss. [Eclipse] has a single name whatever its suit. *)
-let boss_name _boss = failwith "TODO: Render.boss_name"
+let boss_name = function
+  | Boss.Drought -> "A Seca"
+  | Boss.Hourglass -> "A Ampulheta"
+  | Boss.Giant -> "O Gigante"
+  | Boss.Eclipse _ -> "O Eclipse"
+  | Boss.Fog -> "A Névoa"
+  | Boss.Muzzle -> "A Mordaça"
+;;
 
-(* TODO: what each boss does. For [Eclipse], name the suit with [suit] (it gives
-   "♦"). *)
-let boss_description _boss = failwith "TODO: Render.boss_description"
+let boss_description = function
+  | Boss.Drought -> "sem descartes"
+  | Hourglass -> "uma jogada a menos"
+  | Giant -> "meta 50% maior"
+  | Eclipse s -> Printf.sprintf "cartas de %s não pontuam" (suit s)
+  | Fog -> "figuras (J, Q, K) não pontuam"
+  | Muzzle -> "os jokers não fazem nada"
+;;
 
 let stage = function
   | Run.Small -> "Small Blind"

@@ -48,19 +48,20 @@ let plays_left { plays_left; _ } = plays_left
 let discards_left { discards_left; _ } = discards_left
 let boss { boss; _ } = boss
 
-(* TODO: without a boss the play stays as it is; with one, take out the cards it
-   debuffs ([Play.without] and [Boss.debuffs]). *)
 let debuff_play boss play =
   match boss with
   | None -> play
-  | Some _ -> failwith "TODO: Blind.debuff_play"
+  | Some boss -> Play.without (Boss.debuffs boss) play
 ;;
 
-(* TODO: the jokers that score: all of them, or none when the boss disables them. *)
 let active_jokers boss jokers =
   match boss with
   | None -> jokers
-  | Some _ -> failwith "TODO: Blind.active_jokers"
+  | Some boss ->
+    if Boss.disables_jokers boss then
+      []
+    else
+      jokers
 ;;
 
 let status = function
