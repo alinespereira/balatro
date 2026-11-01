@@ -31,7 +31,7 @@ type t = private {
   stage: stage;
   boss: Boss.t; (** Drawn when the ante starts; only its [Boss] blind uses it. *)
   past_bosses: Boss.t list;
-      (** The bosses of the antes before this one, most recent first. A new boss is
+    (** The bosses of the antes before this one, most recent first. A new boss is
           never one of them. *)
   blind: Blind.t;
   levels: Poker.Levels.t;
