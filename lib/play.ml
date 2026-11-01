@@ -11,6 +11,14 @@ let hand { evaluation; _ } = evaluation.category
 let scoring_cards { evaluation; _ } = evaluation.scoring_cards
 let cards { cards; _ } = cards
 
+let without debuffed play =
+  let { evaluation; _ } = play in
+  let new_scoring_cards =
+    scoring_cards play |> List.filter (fun card -> not (debuffed card))
+  in
+  { play with evaluation = { evaluation with scoring_cards = new_scoring_cards } }
+;;
+
 let card_chips (card : Card.t) =
   match card.rank with
   | Card.Jack

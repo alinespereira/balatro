@@ -8,6 +8,7 @@ let status = Alcotest.testable Run.pp_status Run.equal_status
 let error = Alcotest.testable Run.pp_error ( = )
 let joker = Alcotest.testable Joker.pp Joker.equal
 let payout = Alcotest.testable Payout.pp Payout.equal
+let boss = Alcotest.testable Boss.pp Boss.equal
 
 let ok = function
   | Ok x -> x
@@ -185,10 +186,24 @@ let test_progression () =
       in
       Alcotest.(check int) (name "ante") ante (Run.ante run);
       Alcotest.check stage (name "stage") expected_stage (Run.stage run);
-      Alcotest.(check int)
-        (name "target")
-        (encoded ~ante expected_stage)
-        (Blind.target (Run.blind run));
+      (* Only the [Boss] blind has a boss, the one of its ante, and its limits change
+         the target. *)
+      let expected_boss, expected_target =
+        match expected_stage with
+        | Run.Small
+        | Run.Big ->
+          None, encoded ~ante expected_stage
+        | Run.Boss ->
+          let limits =
+            { Boss.plays = 4; Boss.discards = 3; Boss.target = encoded ~ante Run.Boss }
+          in
+          Some (Run.boss run), (Boss.limits (Run.boss run) limits).Boss.target
+      in
+      Alcotest.(check (option boss))
+        (name "boss")
+        expected_boss
+        (Blind.boss (Run.blind run));
+      Alcotest.(check int) (name "target") expected_target (Blind.target (Run.blind run));
       (match rest with
        | [] -> run
        | _ ->
@@ -319,6 +334,24 @@ let test_use_planet () =
   Alcotest.(check int) "in the next blind" 2 (level next)
 ;;
 
+(* The boss is drawn when the ante starts and stays until its [Boss] blind. *)
+let test_boss_of_ante () =
+  let rng = rng () in
+  let next run =
+    let _, shopping = ok (Run.cash_out rng run) in
+    ok (Run.leave_shop rng shopping)
+  in
+  let small = Run.create ~target:free rng Deck.Red in
+  let big = next small in
+  let boss_blind = next big in
+  Alcotest.check boss "same boss at the big blind" (Run.boss small) (Run.boss big);
+  Alcotest.check boss "same boss at the boss blind" (Run.boss small) (Run.boss boss_blind);
+  Alcotest.(check (option boss))
+    "the boss blind has it"
+    (Some (Run.boss small))
+    (Blind.boss (Run.blind boss_blind))
+;;
+
 let () =
   let case name test = Alcotest.test_case name `Quick test in
   Alcotest.run
@@ -331,6 +364,7 @@ let () =
           case "play and discard" test_play_and_discard;
           case "lost" test_lost;
           case "progression" test_progression;
+          case "boss of the ante" test_boss_of_ante;
         ] );
       ( "shop",
         [

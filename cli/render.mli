@@ -20,6 +20,12 @@ val jokers : Balatro.Joker.t list -> string
 (** The name of a planet, in Portuguese. *)
 val planet_name : Balatro.Consumables.Planet.t -> string
 
+(** The name of a boss, in Portuguese, such as ["A Seca"]. *)
+val boss_name : Balatro.Boss.t -> string
+
+(** What the boss does, in Portuguese, such as ["Sem descartes"]. *)
+val boss_description : Balatro.Boss.t -> string
+
 (** The name of a blind stage, such as ["Small Blind"]. *)
 val stage : Balatro.Run.stage -> string
 
@@ -33,7 +39,7 @@ val money : int -> string
     the next reroll. *)
 val shop : Balatro.Shop.t -> string
 
-(** Ante, stage, chips against the target, the plays and discards left, and the money. *)
+(** Ante, stage, the boss of the ante and what it does, chips against the target, the plays and discards left, and the money. *)
 val status : Balatro.Run.t -> string
 
 (** What a play made: the poker hand and the points it scored. *)

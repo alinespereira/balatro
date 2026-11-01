@@ -91,6 +91,24 @@ let planet_name = function
   | Eris -> "Éris"
 ;;
 
+let boss_name = function
+  | Boss.Drought -> "A Seca"
+  | Hourglass -> "A Ampulheta"
+  | Giant -> "O Gigante"
+  | Eclipse _ -> "O Eclipse"
+  | Fog -> "A Névoa"
+  | Muzzle -> "A Mordaça"
+;;
+
+let boss_description = function
+  | Boss.Drought -> "sem descartes"
+  | Hourglass -> "uma jogada a menos"
+  | Giant -> "meta 50% maior"
+  | Eclipse s -> Printf.sprintf "cartas de %s não pontuam" (suit s)
+  | Fog -> "figuras (J, Q, K) não pontuam"
+  | Muzzle -> "os jokers não fazem nada"
+;;
+
 let stage = function
   | Run.Small -> "Small Blind"
   | Big -> "Big Blind"
@@ -142,13 +160,14 @@ let shop (the_shop : Shop.t) =
 ;;
 
 let status run =
-  let { Run.ante; Run.stage = current; Run.blind; Run.money = cash; _ } = run in
+  let { Run.ante; Run.stage = current; Run.boss; Run.blind; Run.money = cash; _ } = run in
   let { Blind.target; Blind.plays_left; Blind.discards_left; Blind.chips; _ } = blind in
   String.concat
     "\n"
     [
       Printf.sprintf "Ante: %d" ante;
       Printf.sprintf "Rodada: %s" (stage current);
+      Printf.sprintf "Chefe: %s (%s)" (boss_name boss) (boss_description boss);
       Printf.sprintf "Meta: %d" target;
       "";
       Printf.sprintf "Fichas: %d" chips;
