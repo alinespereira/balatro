@@ -23,12 +23,19 @@ let all_items =
   @ List.map (fun planet -> PlanetItem planet) Consumables.Planet.all
 ;;
 
-let available ~jokers ~levels:_ =
+let available ~jokers ~levels =
   all_items
   |> List.filter (fun item ->
     match item with
-    | JokerItem joker -> List.mem joker jokers
-    | PlanetItem _ -> true)
+    | JokerItem joker -> not (List.mem joker jokers)
+    | PlanetItem planet ->
+      Poker.Hand.all
+      |> List.map (fun hand -> hand, Poker.Levels.get hand levels)
+      |> List.filter (fun (_, entry) -> Poker.Levels.played entry > 0)
+      |> List.split
+      |> fst
+      |> List.map Poker.Hand.planet
+      |> List.mem planet)
 ;;
 
 let draw_offers rng from = from |> Util.shuffle rng |> List.take offer_count
