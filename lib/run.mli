@@ -2,9 +2,9 @@
 
     Every ante has three blinds, played in order: [Small], [Big] and [Boss]. Beating
     the boss blind of [final_ante] wins the run; losing any blind loses it. Hand levels
-    carry over from one blind to the next, but every blind starts with a new board and
-    a freshly shuffled deck. Money also carries over: the run starts with
-    [starting_money] and every beaten blind pays a [Payout.t]. *)
+    carry over from one blind to the next, and so do the jokers: every blind starts
+    with the board of the one before, reset and reshuffled. Money also carries over:
+    the run starts with [starting_money] and every beaten blind pays a [Payout.t]. *)
 
 (** Which of the three blinds of an ante is being played. *)
 type stage =
@@ -33,6 +33,7 @@ type t = private {
   levels: Poker.Levels.t;
   money: int;
   phase: phase;
+  target_of: ante:int -> stage -> int; (** The points each blind needs: [target]. *)
 }
 
 (** [InProgress] also covers a blind that was just beaten and is waiting for
@@ -69,8 +70,10 @@ val starting_money : int
     $4 for [Big] and $5 for [Boss]. *)
 val reward : stage -> int
 
-(** A run at the small blind of ante 1, every hand at level 1, with [starting_money]. *)
-val create : Random.State.t -> Deck.color -> t
+(** A run at the small blind of ante 1, every hand at level 1, with [starting_money].
+    [target] sets the points each blind needs and defaults to {!target}; tests use it
+    to make blinds easy to win or impossible to beat. *)
+val create : ?target:(ante:int -> stage -> int) -> Random.State.t -> Deck.color -> t
 
 val ante : t -> int
 val stage : t -> stage

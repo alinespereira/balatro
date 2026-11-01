@@ -78,12 +78,37 @@ let test_empty_deck color =
   assert (Board.hand (Board.refill board) = Board.hand board)
 ;;
 
+(* [reset] puts every card back in the deck, shuffled, and keeps the jokers. *)
+let test_reset color =
+  let board = fresh_board color |> Board.refill in
+  let board =
+    match Board.discard [0; 1; 2] board with
+    | Ok board -> Board.refill board
+    | Error e -> failwith (Board.show_error e)
+  in
+  let board =
+    match Board.add_joker Joker.Banner board with
+    | Ok board -> board
+    | Error e -> failwith (Board.show_error e)
+  in
+  let reset = Board.reset (Random.State.make [| 7 |]) board in
+  assert (Board.hand reset = []);
+  assert (Board.discarded reset = []);
+  assert (Board.jokers reset = [Joker.Banner]);
+  let cards = Deck.cards (Board.deck reset) in
+  assert (List.length cards = 52);
+  let sorted cards = List.sort compare cards in
+  let original = Deck.cards (Board.deck (fresh_board color)) in
+  assert (sorted cards = sorted original)
+;;
+
 let () =
   List.iter
     (fun color ->
        test_refill color;
        test_play_and_discard color;
        test_invalid_selections color;
-       test_empty_deck color)
+       test_empty_deck color;
+       test_reset color)
     [Deck.Red; Deck.Blue; Deck.Green]
 ;;

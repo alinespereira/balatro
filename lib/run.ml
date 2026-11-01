@@ -18,6 +18,7 @@ type t = {
   levels: Poker.Levels.t;
   money: int;
   phase: phase;
+  target_of: ante:int -> stage -> int;
 }
 
 type status =
@@ -70,10 +71,10 @@ let target ~ante stage =
   Float.of_int (ante_base ante) *. score_multiplier stage |> Int.of_float
 ;;
 
-let create rng color =
+let create ?(target = target) rng color =
   let run_ante = 1 in
   let run_stage = Small in
-  let run_target = target run_stage ~ante:run_ante in
+  let run_target = target ~ante:run_ante run_stage in
   let run_board = Board.create rng color in
   let run_blind = Blind.create ~target:run_target run_board in
   {
@@ -83,6 +84,7 @@ let create rng color =
     levels = Poker.Levels.initial;
     money = starting_money;
     phase = Playing;
+    target_of = target;
   }
 ;;
 
@@ -142,11 +144,11 @@ let cash_out rng run =
     run
   in
   match Blind.status the_blind, advance the_ante the_stage with
-  | InProgress, _ -> Error BlindNotOver
-  | Lost, _
-  | Won, None ->
+  | Blind.InProgress, _ -> Error BlindNotOver
+  | Blind.Lost, _
+  | Blind.Won, None ->
     Error RunOver
-  | Won, Some _ ->
+  | Blind.Won, Some _ ->
     let the_reward = reward the_stage in
     let { Blind.plays_left; Blind.board = the_board; _ } = the_blind in
     let payout = Payout.make ~reward:the_reward ~plays_left ~money:the_money in
@@ -163,12 +165,17 @@ let cash_out rng run =
 let leave_shop rng run =
   match run with
   | { phase = Playing; _ } -> Error NotInShop
-  | { phase = Shopping { board = the_board; _ }; ante = the_ante; stage = the_stage; _ }
-    ->
+  | {
+      phase = Shopping { board = the_board; _ };
+      ante = the_ante;
+      stage = the_stage;
+      target_of;
+      _;
+    } ->
     (match advance the_ante the_stage with
      | None -> Error RunOver
      | Some (new_ante, new_stage) ->
-       let new_target = target new_stage ~ante:new_ante in
+       let new_target = target_of ~ante:new_ante new_stage in
        let new_board = Board.reset rng the_board in
        let new_blind = Blind.create ~target:new_target new_board in
        Ok
