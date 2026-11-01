@@ -14,7 +14,14 @@ type limits = {
 }
 [@@deriving show, eq]
 
-let random rng = List.nth all (Random.State.int rng (List.length all))
+let random ?(avoid = []) rng =
+  let candidates =
+    match List.filter (fun boss -> not (List.mem boss avoid)) all with
+    | [] -> all
+    | filtered -> filtered
+  in
+  candidates |> Util.draw rng |> fst
+;;
 
 let limits boss limits =
   let { plays = the_plays; target = the_target; _ } = limits in

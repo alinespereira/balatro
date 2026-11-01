@@ -239,3 +239,39 @@ let evaluate cards =
     Ok { category; scoring_cards = scoring_cards category cards }
   )
 ;;
+
+let is_secret = function
+  | HighCard
+  | Pair
+  | TwoPair
+  | ThreeOfAKind
+  | Straight
+  | Flush
+  | FullHouse
+  | FourOfAKind
+  | StraightFlush
+  | RoyalFlush ->
+    false
+  | FiveOfAKind
+  | FlushHouse
+  | FlushFive ->
+    true
+;;
+
+let contains_pair = function
+  | Pair
+  | TwoPair
+  | ThreeOfAKind
+  | FullHouse
+  | FourOfAKind
+  | FiveOfAKind
+  | FlushHouse
+  | FlushFive ->
+    true
+  | Flush
+  | HighCard
+  | Straight
+  | StraightFlush
+  | RoyalFlush ->
+    false
+;;

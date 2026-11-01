@@ -163,6 +163,41 @@ let scoring_cases =
     ]
 ;;
 
+(* Checks [property] on every hand: true for the ones in [expected], false for the
+   others. *)
+let check_every_hand property ~expected =
+  List.iter
+    (fun hand ->
+       Alcotest.(check bool)
+         (Poker.Hand.show hand)
+         (List.mem hand expected)
+         (property hand))
+    Poker.Hand.all
+;;
+
+let test_is_secret () =
+  check_every_hand
+    Poker.Hand.is_secret
+    ~expected:Poker.Hand.[FiveOfAKind; FlushHouse; FlushFive]
+;;
+
+let test_contains_pair () =
+  check_every_hand
+    Poker.Hand.contains_pair
+    ~expected:
+      Poker.Hand.
+        [
+          Pair;
+          TwoPair;
+          ThreeOfAKind;
+          FullHouse;
+          FourOfAKind;
+          FiveOfAKind;
+          FlushHouse;
+          FlushFive;
+        ]
+;;
+
 let () =
   Alcotest.run
     "Hand"
@@ -170,5 +205,10 @@ let () =
       "detectors", detector_cases;
       "evaluate", evaluate_cases;
       "scoring cards", scoring_cases;
+      ( "categories",
+        [
+          Alcotest.test_case "is secret" `Quick test_is_secret;
+          Alcotest.test_case "contains pair" `Quick test_contains_pair;
+        ] );
     ]
 ;;

@@ -30,6 +30,9 @@ type t = private {
   ante: int;
   stage: stage;
   boss: Boss.t; (** Drawn when the ante starts; only its [Boss] blind uses it. *)
+  past_bosses: Boss.t list;
+    (** The bosses of the antes before this one, most recent first. A new boss is
+          never one of them. *)
   blind: Blind.t;
   levels: Poker.Levels.t;
   money: int;
@@ -94,19 +97,22 @@ val board : t -> Board.t
 val status : t -> status
 
 (** Plays the cards at the given positions of the hand in the current blind, scored
-    with the run's hand levels. Returns the play, its points and the new run. *)
+    with the run's hand levels, and counts the play of its hand in the levels. Returns
+    the play, its points and the new run. *)
 val play : int list -> t -> (Play.t * int * t, error) result
 
 (** Discards the cards at the given positions of the hand in the current blind. *)
 val discard : int list -> t -> (t, error) result
 
-(** Pays the blind that was just beaten and opens the shop. The payout is added to the
-    money and returned, so it can be shown. Beating the boss blind of [final_ante] wins
+(** Pays the blind that was just beaten and opens the shop, with offers drawn from
+    [Shop.available]. The payout is added to the money and returned, so it can be
+    shown. Beating the boss blind of [final_ante] wins
     the run instead, and there is nothing to cash out. *)
 val cash_out : Random.State.t -> t -> (Payout.t * t, error) result
 
 (** Closes the shop and moves on to the next blind: [Small] to [Big], [Big] to [Boss],
-    and [Boss] to the [Small] blind of the next ante, which draws a new boss. The new
+    and [Boss] to the [Small] blind of the next ante, which draws a new boss that is
+    not in [past_bosses] nor the current one. The new
     blind gets the shop's board, reset and shuffled with the given state, and the
     [Boss] blind gets the boss of the ante. *)
 val leave_shop : Random.State.t -> t -> (t, error) result
@@ -118,7 +124,8 @@ val buy : int -> t -> (t, error) result
 (** Sells the joker at the given position (0-based) for [Joker.sell_value]. *)
 val sell_joker : int -> t -> (t, error) result
 
-(** Pays [reroll_cost] and replaces the shop's offers. *)
+(** Pays [reroll_cost] and replaces the shop's offers with new ones drawn from
+    [Shop.available]. *)
 val reroll : Random.State.t -> t -> (t, error) result
 
 (** Levels up the hands of the planet. The new levels count from the next play on. *)

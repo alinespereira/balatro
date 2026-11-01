@@ -15,6 +15,7 @@ type t = {
   ante: int;
   stage: stage;
   boss: Boss.t;
+  past_bosses: Boss.t list;
   blind: Blind.t;
   levels: Poker.Levels.t;
   money: int;
@@ -82,6 +83,7 @@ let create ?(target = target) rng color =
     ante = run_ante;
     stage = run_stage;
     boss = Boss.random rng;
+    past_bosses = [];
     blind = run_blind;
     levels = Poker.Levels.initial;
     money = starting_money;
@@ -122,7 +124,8 @@ let play indices run =
   let* the_play, won_chips, the_blind =
     the_blind |> Blind.play the_levels indices |> Result.map_error (fun e -> BlindError e)
   in
-  Ok (the_play, won_chips, { run with blind = the_blind })
+  let new_levels = Poker.Levels.record_play (Play.hand the_play) the_levels in
+  Ok (the_play, won_chips, { run with blind = the_blind; levels = new_levels })
 ;;
 
 let discard indices run =
@@ -141,6 +144,11 @@ let advance ante = function
   | Boss -> None
 ;;
 
+(* What the shop can offer with this board: the jokers it already has are left out. *)
+let shop_items board run =
+  Shop.available ~jokers:(Board.jokers board) ~levels:(levels run)
+;;
+
 let cash_out rng run =
   let* () = not_shopping run in
   let { ante = the_ante; stage = the_stage; blind = the_blind; money = the_money; _ } =
@@ -155,7 +163,7 @@ let cash_out rng run =
     let the_reward = reward the_stage in
     let { Blind.plays_left; Blind.board = the_board; _ } = the_blind in
     let payout = Payout.make ~reward:the_reward ~plays_left ~money:the_money in
-    let shop = Shop.create rng in
+    let shop = Shop.create ~from:(shop_items the_board run) rng in
     Ok
       ( payout,
         {
@@ -173,17 +181,20 @@ let leave_shop rng run =
    ante = the_ante;
    stage = the_stage;
    boss = the_boss;
+   past_bosses = the_past_bosses;
    target_of;
    _;
   } ->
     (match advance the_ante the_stage with
      | None -> Error RunOver
      | Some (new_ante, new_stage) ->
-       let new_boss =
+       let new_boss, new_past_bosses =
          if new_ante = the_ante then
-           the_boss
-         else
-           Boss.random rng
+           the_boss, the_past_bosses
+         else (
+           let past = the_boss :: the_past_bosses in
+           Boss.random ~avoid:past rng, past
+         )
        in
        let new_target = target_of ~ante:new_ante new_stage in
        let new_board = Board.reset rng the_board in
@@ -201,6 +212,7 @@ let leave_shop rng run =
            ante = new_ante;
            stage = new_stage;
            boss = new_boss;
+           past_bosses = new_past_bosses;
            blind = new_blind;
            phase = Playing;
          })
@@ -266,6 +278,7 @@ let reroll rng run =
         {
           run with
           money = the_money - reroll_cost;
-          phase = Shopping { shop = Shop.reroll rng shop; board };
+          phase =
+            Shopping { shop = Shop.reroll ~from:(shop_items board run) rng shop; board };
         }
 ;;

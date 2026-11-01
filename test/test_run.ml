@@ -352,6 +352,67 @@ let test_boss_of_ante () =
     (Blind.boss (Run.blind boss_blind))
 ;;
 
+let next rng run =
+  let _, shopping = ok (Run.cash_out rng run) in
+  ok (Run.leave_shop rng shopping)
+;;
+
+(* Every play counts its hand, so the shop knows which secret hands were played. *)
+let test_play_counts_hand () =
+  let run = Run.create (rng ()) Deck.Red in
+  let the_play, _, played = ok (Run.play [0] run) in
+  let hand = Play.hand the_play in
+  let count run = (Poker.Levels.get hand (Run.levels run)).played in
+  Alcotest.(check int) "before" 0 (count run);
+  Alcotest.(check int) "after" 1 (count played)
+;;
+
+(* There are 9 bosses and 8 antes, so no boss shows up twice in a run. *)
+let test_bosses_do_not_repeat () =
+  let rng = rng () in
+  let rec bosses run acc =
+    let acc = Run.boss run :: acc in
+    if Run.ante run = Run.final_ante then
+      acc
+    else
+      bosses (run |> next rng |> next rng |> next rng) acc
+  in
+  let seen = bosses (Run.create ~target:free rng Deck.Red) [] in
+  Alcotest.(check int) "one boss per ante" Run.final_ante (List.length seen);
+  Alcotest.(check int)
+    "no boss twice"
+    (List.length seen)
+    (List.length (List.sort_uniq compare seen))
+;;
+
+(* Nothing is played with a [free] target, so no shop of the run offers the planet of
+   a secret hand, and no shop offers a joker already owned. *)
+let test_shop_offers () =
+  let rng = rng () in
+  let secret = Consumables.Planet.[PlanetX; Ceres; Eris] in
+  let rec walk run blinds_left =
+    let _, shopping = ok (Run.cash_out rng run) in
+    let owned = Board.jokers (Run.board shopping) in
+    List.iter
+      (fun offer ->
+         let name = Shop.show_item offer in
+         match offer with
+         | Shop.PlanetItem p ->
+           Alcotest.(check bool) (name ^ " is not secret") false (List.mem p secret)
+         | Shop.JokerItem j ->
+           Alcotest.(check bool) (name ^ " is not owned") false (List.mem j owned))
+      (shop_of shopping).Shop.offers;
+    (* Buys the first joker it can, so later shops have jokers to leave out. *)
+    let shopping =
+      match Run.buy 0 shopping with
+      | Ok bought -> bought
+      | Error _ -> shopping
+    in
+    if blinds_left > 1 then walk (ok (Run.leave_shop rng shopping)) (blinds_left - 1)
+  in
+  walk (Run.create ~target:free rng Deck.Red) 20
+;;
+
 let () =
   let case name test = Alcotest.test_case name `Quick test in
   Alcotest.run
@@ -365,6 +426,8 @@ let () =
           case "lost" test_lost;
           case "progression" test_progression;
           case "boss of the ante" test_boss_of_ante;
+          case "play counts the hand" test_play_counts_hand;
+          case "bosses do not repeat" test_bosses_do_not_repeat;
         ] );
       ( "shop",
         [
@@ -374,6 +437,7 @@ let () =
           case "buy a planet" test_buy_planet;
           case "reroll and money" test_reroll_and_money;
           case "use a planet" test_use_planet;
+          case "shop offers" test_shop_offers;
         ] );
     ]
 ;;

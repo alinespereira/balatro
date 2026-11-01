@@ -16,6 +16,9 @@ let two_pair =
   play Card.[create Spades Ace; create Hearts Ace; create Spades King; create Hearts King]
 ;;
 
+let three_of_a_kind = play Card.[create Spades Ace; create Hearts Ace; create Clubs Ace]
+let high_card = play Card.[create Spades Ace; create Hearts King]
+
 (* A pair played with two kickers: four cards played, two of them score. *)
 let pair_with_kickers =
   play Card.[create Spades Ace; create Hearts Ace; create Clubs Two; create Clubs Five]
@@ -58,7 +61,13 @@ let test_changes () =
   check ~expected_chips:0 ~expected_mult:3. (one WrathfulJoker);
   check ~expected_chips:0 ~expected_mult:0. (one GluttonousJoker);
   check ~expected_chips:0 ~expected_mult:8. (one JollyJoker);
-  check ~expected_chips:0 ~expected_mult:0. (one ~ctx:(context two_pair) JollyJoker);
+  (* Jolly Joker counts every hand that contains a pair, not only [Pair]. *)
+  check ~expected_chips:0 ~expected_mult:8. (one ~ctx:(context two_pair) JollyJoker);
+  check
+    ~expected_chips:0
+    ~expected_mult:8.
+    (one ~ctx:(context three_of_a_kind) JollyJoker);
+  check ~expected_chips:0 ~expected_mult:0. (one ~ctx:(context high_card) JollyJoker);
   check
     ~expected_chips:0
     ~expected_mult:20.
