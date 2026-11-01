@@ -58,7 +58,7 @@ type error =
   | NotEnoughMoney of int (** The price that could not be paid. *)
   | ShopError of Shop.error (** The shop refused: no offer at that position. *)
   | BoardError of Board.error
-    (** The board refused: no slot, nothing at that position, or a wrong selection
+  (** The board refused: no slot, nothing at that position, or a wrong selection
           for a tarot. *)
   | NotUsable of Consumables.Consumable.t (** This consumable does nothing yet. *)
 [@@deriving show]

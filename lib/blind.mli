@@ -36,6 +36,7 @@ val discard : int list -> t -> (t, error) result
 
 (** The same blind with another board, such as one where a tarot changed the hand. *)
 val with_board : Board.t -> t -> t
+
 val status : t -> status
 val board : t -> Board.t
 val target : t -> int

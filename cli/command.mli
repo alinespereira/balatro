@@ -6,7 +6,7 @@ type t =
   | Buy of int (** [c 1]: buys the shop offer at that position. *)
   | Sell of int (** [v 2]: sells the joker at that position. *)
   | Use of int * int list
-    (** [u 1 2 3]: uses the consumable at the first position on the cards at the
+  (** [u 1 2 3]: uses the consumable at the first position on the cards at the
           others. *)
   | Reroll (** [r]: replaces the shop offers. *)
   | Leave (** [s]: leaves the shop for the next blind. *)

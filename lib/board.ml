@@ -78,7 +78,9 @@ let remove_consumable idx board =
   else (
     match List.nth_opt consumables idx with
     | Some consumable ->
-      Ok (consumable, { board with consumables = List.filteri (fun i _ -> i <> idx) consumables })
+      Ok
+        ( consumable,
+          { board with consumables = List.filteri (fun i _ -> i <> idx) consumables } )
     | None -> Error (NoConsumableAt idx)
   )
 ;;

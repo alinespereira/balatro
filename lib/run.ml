@@ -302,12 +302,17 @@ let use_consumable idx indices run =
   in
   match consumable with
   | Consumables.Consumable.Tarot tarot ->
-    let* new_board = Board.use_tarot tarot indices board |> Result.map_error board_error in
+    let* new_board =
+      Board.use_tarot tarot indices board |> Result.map_error board_error
+    in
     let new_money = Consumables.Tarot.change_money tarot (money run) in
     Ok (with_board new_board { run with money = new_money })
   | Planet planet ->
     (match indices with
      | [] -> Ok (with_board board (use_planet planet run))
-     | _ -> Error (BoardError (Board.WrongSelection { min = 0; max = 0; got = List.length indices })))
+     | _ ->
+       Error
+         (BoardError
+            (Board.WrongSelection { min = 0; max = 0; got = List.length indices })))
   | Spectral _ -> Error (NotUsable consumable)
 ;;

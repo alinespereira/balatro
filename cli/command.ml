@@ -82,7 +82,8 @@ let error_message = function
       (String.concat " " args)
   | ExpectedOneIndex cmd ->
     Printf.sprintf "O comando '%s' precisa de exatamente uma posição" cmd
-  | MissingConsumable -> "Diga qual consumível usar: 'u 1', ou 'u 1 2 3' para as cartas 2 e 3"
+  | MissingConsumable ->
+    "Diga qual consumível usar: 'u 1', ou 'u 1 2 3' para as cartas 2 e 3"
 ;;
 
 let help =

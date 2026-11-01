@@ -50,8 +50,16 @@ let test_next_rank () =
 
 let test_with () =
   let king = Card.create Card.Hearts Card.King in
-  Alcotest.check card "with suit" (Card.create Card.Spades Card.King) (Card.with_suit Card.Spades king);
-  Alcotest.check card "with rank" (Card.create Card.Hearts Card.Two) (Card.with_rank Card.Two king)
+  Alcotest.check
+    card
+    "with suit"
+    (Card.create Card.Spades Card.King)
+    (Card.with_suit Card.Spades king);
+  Alcotest.check
+    card
+    "with rank"
+    (Card.create Card.Hearts Card.Two)
+    (Card.with_rank Card.Two king)
 ;;
 
 (* ---- Tarot ---- *)
@@ -144,8 +152,17 @@ let test_consumable_slots () =
   let board = filled () in
   let star = Consumable.Tarot Tarot.TheStar in
   let hermit = Consumable.Tarot Tarot.TheHermit in
-  let two = board |> Board.add_consumable star |> board_ok |> Board.add_consumable hermit |> board_ok in
-  Alcotest.(check (list consumable)) "left to right" [star; hermit] (Board.consumables two);
+  let two =
+    board
+    |> Board.add_consumable star
+    |> board_ok
+    |> Board.add_consumable hermit
+    |> board_ok
+  in
+  Alcotest.(check (list consumable))
+    "left to right"
+    [star; hermit]
+    (Board.consumables two);
   (match Board.add_consumable star two with
    | Error e -> Alcotest.check board_error "no slot" Board.NoConsumableSlot e
    | Ok _ -> Alcotest.fail "expected NoConsumableSlot");
@@ -155,7 +172,8 @@ let test_consumable_slots () =
   List.iter
     (fun idx ->
        match Board.remove_consumable idx one with
-       | Error e -> Alcotest.check board_error "nothing there" (Board.NoConsumableAt idx) e
+       | Error e ->
+         Alcotest.check board_error "nothing there" (Board.NoConsumableAt idx) e
        | Ok _ -> Alcotest.fail "expected NoConsumableAt")
     [1; -1]
 ;;
@@ -177,7 +195,15 @@ let test_use_tarot_changes_in_place () =
   Alcotest.check cards "the star" expected (Board.hand starred);
   (* Death gets the cards in hand order: position 1 becomes a copy of position 3. *)
   let died = board_ok (Board.use_tarot Tarot.Death [3; 1] board) in
-  let expected = List.mapi (fun i c -> if i = 1 then List.nth hand 3 else c) hand in
+  let expected =
+    List.mapi
+      (fun i c ->
+         if i = 1 then
+           List.nth hand 3
+         else
+           c)
+      hand
+  in
   Alcotest.check cards "death" expected (Board.hand died)
 ;;
 
@@ -196,7 +222,9 @@ let test_use_tarot_destroys () =
 let test_use_tarot_keeps_changes () =
   let board = filled () in
   let hand = Board.hand board in
-  let diamonds cs = List.length (List.filter (fun (c : Card.t) -> c.suit = Card.Diamonds) cs) in
+  let diamonds cs =
+    List.length (List.filter (fun (c : Card.t) -> c.suit = Card.Diamonds) cs)
+  in
   let starred = board_ok (Board.use_tarot Tarot.TheStar [0; 1; 2] board) in
   let turned = 3 - diamonds (List.filteri (fun i _ -> i < 3) hand) in
   let reset = Board.reset (rng ()) starred in
@@ -213,14 +241,26 @@ let test_use_tarot_errors () =
     | Error e -> Alcotest.check board_error name expected e
     | Ok _ -> Alcotest.fail (name ^ ": expected " ^ Board.show_error expected)
   in
-  expect "star without cards" (Board.WrongSelection { min = 1; max = 3; got = 0 }) Tarot.TheStar [];
+  expect
+    "star without cards"
+    (Board.WrongSelection { min = 1; max = 3; got = 0 })
+    Tarot.TheStar
+    [];
   expect
     "star with four"
     (Board.WrongSelection { min = 1; max = 3; got = 4 })
     Tarot.TheStar
     [0; 1; 2; 3];
-  expect "death with one" (Board.WrongSelection { min = 2; max = 2; got = 1 }) Tarot.Death [0];
-  expect "hermit with one" (Board.WrongSelection { min = 0; max = 0; got = 1 }) Tarot.TheHermit [0];
+  expect
+    "death with one"
+    (Board.WrongSelection { min = 2; max = 2; got = 1 })
+    Tarot.Death
+    [0];
+  expect
+    "hermit with one"
+    (Board.WrongSelection { min = 0; max = 0; got = 1 })
+    Tarot.TheHermit
+    [0];
   expect "past the hand" (Board.InvalidIndex 8) Tarot.TheStar [8];
   expect "twice" (Board.DuplicateIndex 1) Tarot.TheStar [1; 1];
   let hermit = board_ok (Board.use_tarot Tarot.TheHermit [] board) in
@@ -274,12 +314,10 @@ let test_buy_and_use_in_shop () =
    | Ok _ -> Alcotest.fail "expected WrongSelection");
   let used = run_ok (Run.use_consumable 0 (List.init min Fun.id) bought) in
   Alcotest.(check (list consumable)) "used up" [] (Board.consumables (Run.board used));
-  Alcotest.(check int)
-    "money"
-    (Tarot.change_money t (Run.money bought))
-    (Run.money used);
+  Alcotest.(check int) "money" (Tarot.change_money t (Run.money bought)) (Run.money used);
   match Run.use_consumable 0 [] used with
-  | Error e -> Alcotest.check run_error "nothing left" (Run.BoardError (Board.NoConsumableAt 0)) e
+  | Error e ->
+    Alcotest.check run_error "nothing left" (Run.BoardError (Board.NoConsumableAt 0)) e
   | Ok _ -> Alcotest.fail "expected NoConsumableAt"
 ;;
 
@@ -297,7 +335,11 @@ let test_use_in_blind () =
   let expected = board_ok (Board.use_tarot t indices without_tarot) in
   let used = run_ok (Run.use_consumable 0 indices playing) in
   Alcotest.check cards "hand" (Board.hand expected) (Board.hand (Run.board used));
-  Alcotest.check cards "blind's board" (Board.hand expected) (Board.hand (Blind.board (Run.blind used)))
+  Alcotest.check
+    cards
+    "blind's board"
+    (Board.hand expected)
+    (Board.hand (Blind.board (Run.blind used)))
 ;;
 
 let () =

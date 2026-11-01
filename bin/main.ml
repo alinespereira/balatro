@@ -16,10 +16,7 @@ let screen (run : Run.t) =
   match Run.phase run with
   | Run.Playing ->
     [
-      Render.status run;
-      jokers;
-      consumables;
-      run |> Run.board |> Board.hand |> Render.hand;
+      Render.status run; jokers; consumables; run |> Run.board |> Board.hand |> Render.hand;
     ]
   | Shopping { shop; _ } ->
     [Render.money (Run.money run); jokers; consumables; Render.shop shop]

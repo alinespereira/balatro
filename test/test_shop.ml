@@ -9,7 +9,10 @@ let test_price () =
   Alcotest.(check int) "joker" 2 (Shop.price (Shop.JokerItem Joker.Joker));
   Alcotest.(check int) "banner" 5 (Shop.price (Shop.JokerItem Joker.Banner));
   Alcotest.(check int) "pluto" 3 (Shop.price (Shop.PlanetItem Consumables.Planet.Pluto));
-  Alcotest.(check int) "the star" 3 (Shop.price (Shop.TarotItem Consumables.Tarot.TheStar));
+  Alcotest.(check int)
+    "the star"
+    3
+    (Shop.price (Shop.TarotItem Consumables.Tarot.TheStar));
   Alcotest.(check int)
     "every joker, planet and implemented tarot is for sale"
     (List.length Joker.all + 12 + List.length Consumables.Tarot.implemented)
@@ -81,7 +84,11 @@ let test_available () =
     (List.length Joker.all + 9 + List.length Consumables.Tarot.implemented)
     (List.length fresh);
   check_offered "the star" true (Shop.TarotItem Consumables.Tarot.TheStar) fresh;
-  check_offered "the fool is not implemented" false (Shop.TarotItem Consumables.Tarot.TheFool) fresh;
+  check_offered
+    "the fool is not implemented"
+    false
+    (Shop.TarotItem Consumables.Tarot.TheFool)
+    fresh;
   (* The jokers already owned are not offered again. *)
   let owned = Shop.available ~jokers:Joker.[Banner; Joker] ~levels in
   check_offered "banner is owned" false (joker Joker.Banner) owned;
