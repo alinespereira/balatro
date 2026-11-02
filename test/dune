@@ -1,5 +1,6 @@
 (tests
  (names
+  test_action
   test_blind
   test_board
   test_boss
