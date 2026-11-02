@@ -159,7 +159,7 @@ let discard indices board =
 let use_tarot tarot indices board =
   let change_cards tarot indices hand =
     match tarot, indices with
-    | Consumables.Tarot.TheHermit, [] -> Ok hand
+    | _, [] -> Ok hand
     | _ ->
       let* chosen_idx, kept_idx = select indices (List.init (List.length hand) Fun.id) in
       let* chosen, kept = select indices hand in
