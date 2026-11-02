@@ -85,6 +85,7 @@ jobs:
       - name: Install dependencies
         run: opam install . --deps-only --yes
 
-      # There is no screen here, so the window is only compiled, not run.
+      # There is no screen here, so the window is only compiled, not run. The
+      # tests run in the job above (this one does not install alcotest).
       - name: Build
-        run: opam exec -- dune build @all
+        run: opam exec -- dune build bin/gui/main.exe
