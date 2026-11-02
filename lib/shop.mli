@@ -4,6 +4,7 @@
 type item =
   | JokerItem of Joker.t
   | PlanetItem of Consumables.Planet.t
+  | TarotItem of Consumables.Tarot.t
 [@@deriving show, eq]
 
 type t = private {
@@ -20,10 +21,11 @@ val offer_count : int
 (** What the first reroll of a shop costs: $5. Every reroll after it costs $1 more. *)
 val base_reroll_cost : int
 
-(** What an item costs: [Joker.cost] for a joker, $3 for a planet. *)
+(** What an item costs: [Joker.cost] for a joker, $3 for a planet or a tarot. *)
 val price : item -> int
 
-(** Every item the shop can offer: each joker and each planet once. *)
+(** Every item the shop can offer: each joker, each planet and each
+    [Consumables.Tarot.implemented] tarot once. *)
 val all_items : item list
 
 (** What the shop can offer right now: every item of [all_items] except

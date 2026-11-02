@@ -3,6 +3,7 @@ type t =
   | Discard of int list
   | Buy of int
   | Sell of int
+  | Use of int * int list
   | Reroll
   | Leave
   | Help
@@ -15,6 +16,7 @@ type error =
   | NotAnIndex of string
   | ArgsProvided of string * string list
   | ExpectedOneIndex of string
+  | MissingConsumable
 [@@deriving show, eq]
 
 let ( let* ) = Result.bind
@@ -56,6 +58,11 @@ let parse line =
   | ["c"; arg] -> Result.map (fun idx -> Buy idx) (to_index arg)
   | ["v"; arg] -> Result.map (fun idx -> Sell idx) (to_index arg)
   | (("c" | "v") as cmd) :: _ -> Error (ExpectedOneIndex cmd)
+  | ["u"] -> Error MissingConsumable
+  | "u" :: consumable :: args ->
+    let* idx = to_index consumable in
+    let* cards = indices args in
+    Ok (Use (idx, cards))
   | ["r"] -> Ok Reroll
   | ["s"] -> Ok Leave
   | [("h" | "?")] -> Ok Help
@@ -75,12 +82,15 @@ let error_message = function
       (String.concat " " args)
   | ExpectedOneIndex cmd ->
     Printf.sprintf "O comando '%s' precisa de exatamente uma posição" cmd
+  | MissingConsumable ->
+    "Diga qual consumível usar: 'u 1', ou 'u 1 2 3' para as cartas 2 e 3"
 ;;
 
 let help =
   {|Comandos:
   p 1 3 5   joga as cartas nas posições 1, 3 e 5
   d 2 4     descarta as cartas nas posições 2 e 4
+  u 1 2 3   usa o consumível 1 nas cartas 2 e 3 (também na loja)
   h ou ?    mostra esta ajuda
   q         sai do jogo
 

@@ -38,6 +38,7 @@ type error =
   | NotEnoughMoney of int
   | ShopError of Shop.error
   | BoardError of Board.error
+  | NotUsable of Consumables.Consumable.t
 [@@deriving show]
 
 let ( let* ) = Result.bind
@@ -241,6 +242,10 @@ let buy idx run =
         | Shop.PlanetItem planet ->
           let new_run = use_planet planet run in
           Ok (new_run, board)
+        | Shop.TarotItem tarot ->
+          Board.add_consumable (Consumables.Consumable.Tarot tarot) board
+          |> Result.map (fun new_board -> run, new_board)
+          |> Result.map_error (fun e -> BoardError e)
       in
       Ok
         {
@@ -281,4 +286,33 @@ let reroll rng run =
           phase =
             Shopping { shop = Shop.reroll ~from:(shop_items board run) rng shop; board };
         }
+;;
+
+(* The run with another board, in the blind being played or in the shop. *)
+let with_board new_board run =
+  match run.phase with
+  | Playing -> { run with blind = Blind.with_board new_board run.blind }
+  | Shopping { shop; _ } -> { run with phase = Shopping { shop; board = new_board } }
+;;
+
+let use_consumable idx indices run =
+  let board_error e = BoardError e in
+  let* consumable, board =
+    Board.remove_consumable idx (board run) |> Result.map_error board_error
+  in
+  match consumable with
+  | Consumables.Consumable.Tarot tarot ->
+    let* new_board =
+      Board.use_tarot tarot indices board |> Result.map_error board_error
+    in
+    let new_money = Consumables.Tarot.change_money tarot (money run) in
+    Ok (with_board new_board { run with money = new_money })
+  | Planet planet ->
+    (match indices with
+     | [] -> Ok (with_board board (use_planet planet run))
+     | _ ->
+       Error
+         (BoardError
+            (Board.WrongSelection { min = 0; max = 0; got = List.length indices })))
+  | Spectral _ -> Error (NotUsable consumable)
 ;;

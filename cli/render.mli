@@ -21,6 +21,16 @@ val jokers : Balatro.Joker.t list -> string
 (** The name of a planet, in Portuguese. *)
 val planet_name : Balatro.Consumables.Planet.t -> string
 
+(** The name of a tarot, in Portuguese, such as ["A Estrela"]. *)
+val tarot_name : Balatro.Consumables.Tarot.t -> string
+
+(** What the tarot does, in Portuguese. *)
+val tarot_description : Balatro.Consumables.Tarot.t -> string
+
+(** The consumables owned, one per line under their 1-based position, or an empty
+    string when there are none. *)
+val consumables : Balatro.Consumables.Consumable.t list -> string
+
 (** The name of a boss, in Portuguese, such as ["A Seca"]. *)
 val boss_name : Balatro.Boss.t -> string
 

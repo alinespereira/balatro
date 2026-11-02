@@ -1,6 +1,7 @@
 type item =
   | JokerItem of Joker.t
   | PlanetItem of Consumables.Planet.t
+  | TarotItem of Consumables.Tarot.t
 [@@deriving show, eq]
 
 type t = {
@@ -15,12 +16,15 @@ let base_reroll_cost = 5
 
 let price = function
   | JokerItem joker -> Joker.cost joker
-  | PlanetItem _ -> 3
+  | PlanetItem _
+  | TarotItem _ ->
+    3
 ;;
 
 let all_items =
   List.map (fun joker -> JokerItem joker) Joker.all
   @ List.map (fun planet -> PlanetItem planet) Consumables.Planet.all
+  @ List.map (fun tarot -> TarotItem tarot) Consumables.Tarot.implemented
 ;;
 
 let available ~jokers ~levels =
@@ -28,6 +32,7 @@ let available ~jokers ~levels =
   |> List.filter (fun item ->
     match item with
     | JokerItem joker -> not (List.exists (Joker.same_kind joker) jokers)
+    | TarotItem _ -> true
     | PlanetItem planet ->
       (* A planet shows up if one of its hands is not secret or was already played. *)
       Poker.Hand.all

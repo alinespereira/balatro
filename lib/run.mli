@@ -57,7 +57,10 @@ type error =
   | NotInShop (** The shop commands only work while shopping. *)
   | NotEnoughMoney of int (** The price that could not be paid. *)
   | ShopError of Shop.error (** The shop refused: no offer at that position. *)
-  | BoardError of Board.error (** The board refused: no joker slot, or no joker there. *)
+  | BoardError of Board.error
+  (** The board refused: no slot, nothing at that position, or a wrong selection
+          for a tarot. *)
+  | NotUsable of Consumables.Consumable.t (** This consumable does nothing yet. *)
 [@@deriving show]
 
 (** The last ante: beating its boss blind wins the run. *)
@@ -118,7 +121,8 @@ val cash_out : Random.State.t -> t -> (Payout.t * t, error) result
 val leave_shop : Random.State.t -> t -> (t, error) result
 
 (** Buys the offer at the given position (0-based) if there is money for it. A joker
-    goes to the board; a planet is used right away. *)
+    goes to the board; a planet is used right away; a tarot goes to a consumable slot
+    of the board. *)
 val buy : int -> t -> (t, error) result
 
 (** Sells the joker at the given position (0-based) for [Joker.sell_value]. *)
@@ -127,6 +131,13 @@ val sell_joker : int -> t -> (t, error) result
 (** Pays [reroll_cost] and replaces the shop's offers with new ones drawn from
     [Shop.available]. *)
 val reroll : Random.State.t -> t -> (t, error) result
+
+(** Uses the consumable at the given position (0-based) of the board on the cards at
+    the given positions of the hand, while playing or shopping. A tarot goes through
+    [Board.use_tarot] and [Consumables.Tarot.change_money]; a planet needs no cards and
+    goes through [use_planet]. The consumable is used up, unless there was an error:
+    then the run stays as it was. Spectral cards are [NotUsable] for now. *)
+val use_consumable : int -> int list -> t -> (t, error) result
 
 (** Levels up the hands of the planet. The new levels count from the next play on. *)
 val use_planet : Consumables.Planet.t -> t -> t

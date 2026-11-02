@@ -58,10 +58,17 @@ let rec shop_with rng wanted run =
 
 let is_joker = function
   | Shop.JokerItem _ -> true
-  | Shop.PlanetItem _ -> false
+  | Shop.PlanetItem _
+  | Shop.TarotItem _ ->
+    false
 ;;
 
-let is_planet item = not (is_joker item)
+let is_planet = function
+  | Shop.PlanetItem _ -> true
+  | Shop.JokerItem _
+  | Shop.TarotItem _ ->
+    false
+;;
 
 let test_target () =
   Alcotest.(check int) "ante 1, small" 300 (Run.target ~ante:1 Run.Small);
@@ -240,7 +247,9 @@ let test_buy_and_sell_joker () =
   let bought_joker =
     match List.nth (shop_of shopping).Shop.offers idx with
     | Shop.JokerItem joker -> joker
-    | Shop.PlanetItem _ -> Alcotest.fail "expected a joker"
+    | Shop.PlanetItem _
+    | Shop.TarotItem _ ->
+      Alcotest.fail "expected a joker"
   in
   let money = Run.money shopping in
   let bought = ok (Run.buy idx shopping) in
@@ -276,7 +285,9 @@ let test_buy_planet () =
   let planet =
     match List.nth (shop_of shopping).Shop.offers idx with
     | Shop.PlanetItem planet -> planet
-    | Shop.JokerItem _ -> Alcotest.fail "expected a planet"
+    | Shop.JokerItem _
+    | Shop.TarotItem _ ->
+      Alcotest.fail "expected a planet"
   in
   let level hand run = (Poker.Levels.get hand (Run.levels run)).level in
   let levelled =
@@ -403,7 +414,12 @@ let test_shop_offers () =
            Alcotest.(check bool)
              (name ^ " is not owned")
              false
-             (List.exists (Joker.same_kind j) owned))
+             (List.exists (Joker.same_kind j) owned)
+         | Shop.TarotItem t ->
+           Alcotest.(check bool)
+             (name ^ " is implemented")
+             true
+             (List.mem t Consumables.Tarot.implemented))
       (shop_of shopping).Shop.offers;
     (* Buys the first joker it can, so later shops have jokers to leave out. *)
     let shopping =

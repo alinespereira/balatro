@@ -5,6 +5,9 @@ type t =
   | Discard of int list (** [d 2 4]: discards the cards at those positions. *)
   | Buy of int (** [c 1]: buys the shop offer at that position. *)
   | Sell of int (** [v 2]: sells the joker at that position. *)
+  | Use of int * int list
+  (** [u 1 2 3]: uses the consumable at the first position on the cards at the
+          others. *)
   | Reroll (** [r]: replaces the shop offers. *)
   | Leave (** [s]: leaves the shop for the next blind. *)
   | Help (** [h] or [?]: lists the commands. *)
@@ -17,6 +20,7 @@ type error =
   | NotAnIndex of string (** A word after the command is not a number. *)
   | ArgsProvided of string * string list (** Args were provided but not expected. *)
   | ExpectedOneIndex of string (** The command takes exactly one position. *)
+  | MissingConsumable (** [u] needs the position of a consumable. *)
 [@@deriving show, eq]
 
 (** Parses one line typed by the player. Words are separated by spaces or tabs, and
