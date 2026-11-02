@@ -54,10 +54,11 @@ let remove_joker idx board =
   )
 ;;
 
-(* TODO(Aline): [List.filter_map] does the whole job: it applies [f] and keeps only
-   the [Some]s. The jokers are stored most recent first, but [filter_map] keeps the
-   order, so it can work on [board.jokers] directly. *)
-let update_jokers _f _board = failwith "TODO: Board.update_jokers"
+let update_jokers f board =
+  let { jokers; _ } = board in
+  let jokers = List.filter_map f jokers in
+  { board with jokers }
+;;
 
 let create rng color =
   let deck = Deck.create color |> Deck.shuffle rng in

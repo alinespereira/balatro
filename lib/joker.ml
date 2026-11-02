@@ -51,9 +51,7 @@ let fresh = function
     joker
 ;;
 
-(* TODO(Aline): two jokers are the same kind when they are equal once their state is
-   put back to the start. [fresh] already does that part. *)
-let same_kind _a _b = failwith "TODO: Joker.same_kind"
+let same_kind a b = equal (fresh a) (fresh b)
 
 (* All the jokers so far are common in Balatro. *)
 let rarity = function
@@ -145,13 +143,12 @@ let changes ctx joker =
   | Banner ->
     let { discards_left; _ } = ctx in
     [Score.AddChips (30 * discards_left)]
-  (* TODO(Aline): the jokers with state score what their payload says. Remember that
-     [Score.AddMult] takes a float: [float_of_int]. *)
-  | GreenJoker _
-  | RideTheBus _
-  | Runner _
-  | IceCream _ ->
-    failwith "TODO: Joker.changes for the jokers with state"
+  | GreenJoker { mult }
+  | RideTheBus { mult } ->
+    [Score.AddMult (float_of_int mult)]
+  | Runner { chips }
+  | IceCream { chips } ->
+    [Score.AddChips chips]
 ;;
 
 let all_changes ctx = ctx.jokers |> List.concat_map (changes ctx)
@@ -160,14 +157,32 @@ type event =
   | Played of Play.t
   | Discarded
 
-(* TODO(Aline): one [match] on the event and the joker, returning the joker with its
-   new state ([Some (GreenJoker { mult = mult + 1 })]), or [None] when it goes away.
-   - GreenJoker: +1 per [Played], -1 per [Discarded], never below 0 ([max]).
-   - RideTheBus: on [Played], back to 0 if a scoring card ([Play.scoring_cards]) is a
-     Jack, Queen or King, +1 otherwise. A discard does not change it.
-   - Runner: +15 on [Played] when the hand contains a straight: [Straight],
-     [StraightFlush] or [RoyalFlush] ([Play.hand]).
-   - IceCream: -5 on [Played]; at 0 or less it melts, so [None].
-   - Every other joker, and every other event: [Some joker], unchanged. A catch-all
-     [| _, joker -> Some joker] at the end is fine here. *)
-let react _event _joker = failwith "TODO: Joker.react"
+let react event joker =
+  match event, joker with
+  | Played _, GreenJoker { mult } -> Some (GreenJoker { mult = mult + 1 })
+  | Discarded, GreenJoker { mult } -> Some (GreenJoker { mult = max 0 (mult - 1) })
+  | Played play, RideTheBus { mult } ->
+    let scoring_cards = Play.scoring_cards play in
+    if
+      List.exists
+        (fun { Card.rank; _ } -> List.mem rank [Card.Jack; Card.Queen; Card.King])
+        scoring_cards
+    then
+      Some (fresh joker)
+    else
+      Some (RideTheBus { mult = mult + 1 })
+  | Played play, Runner { chips } ->
+    (match Play.hand play with
+     | Poker.Hand.Straight
+     | StraightFlush
+     | RoyalFlush ->
+       Some (Runner { chips = chips + 15 })
+     | _ -> Some joker)
+  | Played _, IceCream { chips } ->
+    let chips = chips - 5 in
+    if chips <= 0 then
+      None
+    else
+      Some (IceCream { chips })
+  | _ -> Some joker
+;;
