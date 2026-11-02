@@ -117,8 +117,14 @@ let test_errors () =
     "play nothing"
     (board_error Board.NoCards)
     (Action.apply (rng ()) (Action.Play []) run);
-  expect_error "buy while playing" Run.NotInShop (Action.apply (rng ()) (Action.Buy 0) run);
-  expect_error "leave while playing" Run.NotInShop (Action.apply (rng ()) Action.Leave run)
+  expect_error
+    "buy while playing"
+    Run.NotInShop
+    (Action.apply (rng ()) (Action.Buy 0) run);
+  expect_error
+    "leave while playing"
+    Run.NotInShop
+    (Action.apply (rng ()) Action.Leave run)
 ;;
 
 let () =
