@@ -23,3 +23,17 @@
   (alcotest :with-test))
  (tags
   ("balatro" "card-game" "poker")))
+
+(package
+ (name balatro-gui)
+ (synopsis "A graphical interface for the Balatro model, made with raylib")
+ (description
+  "A window to play the Balatro model with the mouse, built on the raylib bindings.")
+ (depends
+  ocaml
+  (balatro
+   (= :version))
+  raylib
+  ctypes)
+ (tags
+  ("balatro" "card-game" "poker" "raylib")))
