@@ -15,10 +15,31 @@ type outcome =
   | RunLost of Play.t * int
   | Done
 
-(* TODO(Aline): one case per action. The simple ones call the [Run] function and wrap
-   the new run as [Done]. [Play] is the flow that lives in [bin/main.ml] today: after
-   [Run.play], look at [Run.status] and at [Blind.status (Run.blind run)] to choose
-   between [Played], [BlindWon] (after [Run.cash_out]), [RunWon] and [RunLost]. *)
-let apply (_ : Random.State.t) (_ : t) (_ : Run.t) : (outcome * Run.t, Run.error) result =
-  failwith "TODO: Action.apply"
+let ( let* ) = Result.bind
+
+(* Wraps the run of an action that has nothing to show. *)
+let as_done result = Result.map (fun run -> Done, run) result
+
+(* What a play caused, looking at the run after it. *)
+let after_play rng (play, points, run) =
+  match Run.status run, Blind.status (Run.blind run) with
+  | Run.Won, _ -> Ok (RunWon (play, points), run)
+  | Run.Lost, _ -> Ok (RunLost (play, points), run)
+  | Run.InProgress, Blind.Won ->
+    let* payout, shopping = Run.cash_out rng run in
+    Ok (BlindWon (play, points, payout), shopping)
+  | Run.InProgress, _ -> Ok (Played (play, points), run)
+;;
+
+let apply rng action run =
+  match action with
+  | Play indices ->
+    let* played = Run.play indices run in
+    after_play rng played
+  | Discard indices -> Run.discard indices run |> as_done
+  | Buy index -> Run.buy index run |> as_done
+  | Sell index -> Run.sell_joker index run |> as_done
+  | Use (index, indices) -> Run.use_consumable index indices run |> as_done
+  | Reroll -> Run.reroll rng run |> as_done
+  | Leave -> Run.leave_shop rng run |> as_done
 ;;
