@@ -4,14 +4,14 @@ open Balatro_gui
 
 let rng () = Random.State.make [| 42 |]
 
-let center (r : Layout.rect) = r.Layout.x +. (r.Layout.width /. 2.), r.Layout.y +. (r.Layout.height /. 2.)
+let center (r : Layout.rect) =
+  r.Layout.x +. (r.Layout.width /. 2.), r.Layout.y +. (r.Layout.height /. 2.)
+;;
 
 let click_on r = Update.Click (fst (center r), snd (center r))
 
 (* The click on the card at that position of a full hand, none of it selected. *)
-let click_card ?(selected = []) idx =
-  click_on (List.nth (Layout.cards ~selected 8) idx)
-;;
+let click_card ?(selected = []) idx = click_on (List.nth (Layout.cards ~selected 8) idx)
 
 (* A point where there is nothing: the top-right corner of the window. *)
 let nowhere = Update.Click (float_of_int Layout.width -. 1., 1.)
@@ -38,7 +38,10 @@ let test_card_at () =
   Alcotest.(check (option int))
     "the gap after the first card"
     None
-    (Layout.card_at ~selected:[] 8 (first.Layout.x +. first.Layout.width +. 1., first.Layout.y +. 1.));
+    (Layout.card_at
+       ~selected:[]
+       8
+       (first.Layout.x +. first.Layout.width +. 1., first.Layout.y +. 1.));
   (* A selected card is higher: its top edge is hit, and the strip it left is not. *)
   let raised = List.nth (Layout.cards ~selected:[2] 8) 2 in
   let below = raised.Layout.y +. raised.Layout.height +. (Layout.selected_lift /. 2.) in
@@ -65,7 +68,9 @@ let test_toggle () =
 
 let test_message () =
   let play =
-    match Play.make [Card.create Card.Hearts Card.King; Card.create Card.Spades Card.King] with
+    match
+      Play.make [Card.create Card.Hearts Card.King; Card.create Card.Spades Card.King]
+    with
     | Ok play -> play
     | Error _ -> Alcotest.fail "two kings are a valid play"
   in
@@ -75,7 +80,9 @@ let test_message () =
     | None -> Alcotest.fail (what ^ ": no message")
   in
   says "played" (Action.Played (play, 42));
-  says "blind won" (Action.BlindWon (play, 42, Payout.make ~reward:3 ~plays_left:2 ~money:4));
+  says
+    "blind won"
+    (Action.BlindWon (play, 42, Payout.make ~reward:3 ~plays_left:2 ~money:4));
   says "run won" (Action.RunWon (play, 42));
   says "run lost" (Action.RunLost (play, 42));
   Alcotest.(check (option string)) "done" None (Update.message Action.Done)

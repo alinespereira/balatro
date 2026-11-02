@@ -20,7 +20,12 @@ let cards ~selected n =
   let left = (float_of_int width -. total) /. 2. in
   let top = float_of_int height -. card_height -. 100. in
   List.init n (fun i ->
-    let lift = if List.mem i selected then selected_lift else 0. in
+    let lift =
+      if List.mem i selected then
+        selected_lift
+      else
+        0.
+    in
     {
       x = left +. (float_of_int i *. (card_width +. gap));
       y = top -. lift;

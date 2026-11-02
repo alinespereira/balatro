@@ -64,7 +64,12 @@ let draw_card font (r : Layout.rect) card ~selected =
     Raylib.draw_rectangle_lines_ex (rectangle r) 4. Raylib.Color.gold
   else
     Raylib.draw_rectangle_lines_ex (rectangle r) 1. Raylib.Color.darkgray;
-  text font (Label.card card) ~x:(r.Layout.x +. 10.) ~y:(r.Layout.y +. 8.) (suit_color card)
+  text
+    font
+    (Label.card card)
+    ~x:(r.Layout.x +. 10.)
+    ~y:(r.Layout.y +. 8.)
+    (suit_color card)
 ;;
 
 let draw_button font (r : Layout.rect) label =
@@ -74,7 +79,11 @@ let draw_button font (r : Layout.rect) label =
 
 let draw font (model : Model.t) =
   Raylib.clear_background Raylib.Color.darkgreen;
-  draw_lines font ~x:24. ~y:24. (String.split_on_char '\n' (Render.status model.Model.run));
+  draw_lines
+    font
+    ~x:24.
+    ~y:24.
+    (String.split_on_char '\n' (Render.status model.Model.run));
   Option.iter
     (fun message -> text font message ~x:520. ~y:24. Raylib.Color.gold)
     model.Model.message;
@@ -83,7 +92,8 @@ let draw font (model : Model.t) =
     let hand = Board.hand (Run.board model.Model.run) in
     let places = Layout.cards ~selected:model.Model.selected (List.length hand) in
     List.iteri
-      (fun i (card, r) -> draw_card font r card ~selected:(List.mem i model.Model.selected))
+      (fun i (card, r) ->
+         draw_card font r card ~selected:(List.mem i model.Model.selected))
       (List.combine hand places);
     draw_button font Layout.play_button "Jogar";
     draw_button font Layout.discard_button "Descartar"
