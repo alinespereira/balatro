@@ -1,7 +1,15 @@
 open Balatro
 
 let error = Alcotest.testable Run.pp_error ( = )
-let card = Alcotest.testable Card.pp Card.equal
+
+(* [Card.t] does not derive [show], so its printer is written by hand. *)
+let card =
+  let pp fmt (c : Card.t) =
+    Format.fprintf fmt "%s of %s" (Card.show_rank c.rank) (Card.show_suit c.suit)
+  in
+  Alcotest.testable pp ( = )
+;;
+
 let payout = Alcotest.testable Payout.pp Payout.equal
 let rng () = Random.State.make [| 42 |]
 
