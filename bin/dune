@@ -1,4 +1,5 @@
 (executable
  (public_name balatro)
+ (package balatro)
  (name main)
  (libraries balatro balatro_text balatro_cli unix))
