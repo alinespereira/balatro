@@ -24,6 +24,11 @@ let cases : (string * (Command.t, Command.error) result) list =
     "c", Error (Command.ExpectedOneIndex "c");
     "v 1 2", Error (Command.ExpectedOneIndex "v");
     "c 0", Error (Command.NotAnIndex "0");
+    "u 1", Ok (Command.Use (0, []));
+    "u 2 1 3", Ok (Command.Use (1, [0; 2]));
+    "u", Error Command.MissingConsumable;
+    "u 0 1", Error (Command.NotAnIndex "0");
+    "u 1 x", Error (Command.NotAnIndex "x");
     "r", Ok Command.Reroll;
     "s", Ok Command.Leave;
     "h", Ok Command.Help;
@@ -57,7 +62,7 @@ let test_help_mentions_every_command () =
            | _ -> false)
        in
        Alcotest.(check bool) cmd true mentioned)
-    ["p"; "d"; "h"; "?"; "q"; "c"; "v"; "r"; "s"]
+    ["p"; "d"; "u"; "h"; "?"; "q"; "c"; "v"; "r"; "s"]
 ;;
 
 let test_error_message () =

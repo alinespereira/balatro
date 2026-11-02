@@ -29,5 +29,15 @@ type t = private {
 
 val create : suit -> rank -> t
 
+(** The same card with another suit. The decoration stays. *)
+val with_suit : suit -> t -> t
+
+(** The same card with another rank. The decoration stays. *)
+val with_rank : rank -> t -> t
+
+(** The rank right above: [Two] gives [Three], [King] gives [Ace], and [Ace] goes back
+    to [Two]. *)
+val next_rank : rank -> rank
+
 module RankMap : Map.S with type key = rank
 module SuitMap : Map.S with type key = suit

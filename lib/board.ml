@@ -6,6 +6,13 @@ type error =
   | InvalidPlay of Poker.Hand.error
   | NoJokerSlot
   | NoJokerAt of int
+  | NoConsumableSlot
+  | NoConsumableAt of int
+  | WrongSelection of {
+      min: int;
+      max: int;
+      got: int;
+    }
 [@@deriving show]
 
 type t = {
@@ -51,6 +58,30 @@ let remove_joker idx board =
             jokers = List.filteri (fun i _ -> i <> idx) the_jokers |> List.rev;
           } )
     | None -> Error (NoJokerAt idx)
+  )
+;;
+
+let consumables { consumables; _ } = consumables
+
+let add_consumable consumable board =
+  let { consumables; consumable_slots; _ } = board in
+  if List.length consumables < consumable_slots then
+    Ok { board with consumables = consumables @ [consumable] }
+  else
+    Error NoConsumableSlot
+;;
+
+let remove_consumable idx board =
+  let { consumables; _ } = board in
+  if idx < 0 then
+    Error (NoConsumableAt idx)
+  else (
+    match List.nth_opt consumables idx with
+    | Some consumable ->
+      Ok
+        ( consumable,
+          { board with consumables = List.filteri (fun i _ -> i <> idx) consumables } )
+    | None -> Error (NoConsumableAt idx)
   )
 ;;
 
@@ -123,4 +154,29 @@ let play indices board =
 let discard indices board =
   let* selected, kept = select indices board.hand in
   Ok { board with hand = kept; discarded = selected @ board.discarded }
+;;
+
+let use_tarot tarot indices board =
+  let change_cards tarot indices hand =
+    match tarot, indices with
+    | _, [] -> Ok hand
+    | _ ->
+      let* chosen_idx, kept_idx = select indices (List.init (List.length hand) Fun.id) in
+      let* chosen, kept = select indices hand in
+      Ok
+        (Consumables.Tarot.change_cards tarot chosen
+         |> List.combine chosen_idx
+         |> List.append (List.combine kept_idx (List.map Option.some kept))
+         |> List.sort (fun (i, _) (j, _) -> Int.compare i j)
+         |> List.filter_map snd)
+  in
+  let min, max = Consumables.Tarot.selection tarot in
+  let got = List.length indices in
+  if got < min || got > max then
+    Error (WrongSelection { min; max; got })
+  else (
+    let { hand; _ } = board in
+    let* new_hand = change_cards tarot indices hand in
+    Ok { board with hand = new_hand }
+  )
 ;;
