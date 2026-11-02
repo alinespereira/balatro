@@ -1,3 +1,4 @@
+open Balatro
 open Balatro_cli
 
 let parsed =
@@ -10,27 +11,27 @@ let parsed =
 (* One row per line typed by the player: the line and what [parse] should return. *)
 let cases : (string * (Command.t, Command.error) result) list =
   [
-    "p 1 3 5", Ok (Command.Play [0; 2; 4]);
-    "d 2 4", Ok (Command.Discard [1; 3]);
-    "  p   1    2  ", Ok (Command.Play [0; 1]);
-    "p\t1\t2", Ok (Command.Play [0; 1]);
-    "p", Ok (Command.Play []);
-    "d", Ok (Command.Discard []);
+    "p 1 3 5", Ok (Command.Act (Action.Play [0; 2; 4]));
+    "d 2 4", Ok (Command.Act (Action.Discard [1; 3]));
+    "  p   1    2  ", Ok (Command.Act (Action.Play [0; 1]));
+    "p\t1\t2", Ok (Command.Act (Action.Play [0; 1]));
+    "p", Ok (Command.Act (Action.Play []));
+    "d", Ok (Command.Act (Action.Discard []));
     "p 0", Error (Command.NotAnIndex "0");
     "p 1 -2", Error (Command.NotAnIndex "-2");
     "p 1 x", Error (Command.NotAnIndex "x");
-    "c 1", Ok (Command.Buy 0);
-    "v 2", Ok (Command.Sell 1);
+    "c 1", Ok (Command.Act (Action.Buy 0));
+    "v 2", Ok (Command.Act (Action.Sell 1));
     "c", Error (Command.ExpectedOneIndex "c");
     "v 1 2", Error (Command.ExpectedOneIndex "v");
     "c 0", Error (Command.NotAnIndex "0");
-    "u 1", Ok (Command.Use (0, []));
-    "u 2 1 3", Ok (Command.Use (1, [0; 2]));
+    "u 1", Ok (Command.Act (Action.Use (0, [])));
+    "u 2 1 3", Ok (Command.Act (Action.Use (1, [0; 2])));
     "u", Error Command.MissingConsumable;
     "u 0 1", Error (Command.NotAnIndex "0");
     "u 1 x", Error (Command.NotAnIndex "x");
-    "r", Ok Command.Reroll;
-    "s", Ok Command.Leave;
+    "r", Ok (Command.Act Action.Reroll);
+    "s", Ok (Command.Act Action.Leave);
     "h", Ok Command.Help;
     "?", Ok Command.Help;
     "q", Ok Command.Quit;

@@ -1,11 +1,7 @@
+module Action = Balatro.Action
+
 type t =
-  | Play of int list
-  | Discard of int list
-  | Buy of int
-  | Sell of int
-  | Use of int * int list
-  | Reroll
-  | Leave
+  | Act of Action.t
   | Help
   | Quit
 [@@deriving show, eq]
@@ -53,18 +49,18 @@ let parse line =
   let indices args = List.map to_index args |> sequence in
   match parsed with
   | [] -> Error Empty
-  | "p" :: args -> Result.map (fun idx -> Play idx) (indices args)
-  | "d" :: args -> Result.map (fun idx -> Discard idx) (indices args)
-  | ["c"; arg] -> Result.map (fun idx -> Buy idx) (to_index arg)
-  | ["v"; arg] -> Result.map (fun idx -> Sell idx) (to_index arg)
+  | "p" :: args -> Result.map (fun idx -> Act (Action.Play idx)) (indices args)
+  | "d" :: args -> Result.map (fun idx -> Act (Action.Discard idx)) (indices args)
+  | ["c"; arg] -> Result.map (fun idx -> Act (Action.Buy idx)) (to_index arg)
+  | ["v"; arg] -> Result.map (fun idx -> Act (Action.Sell idx)) (to_index arg)
   | (("c" | "v") as cmd) :: _ -> Error (ExpectedOneIndex cmd)
   | ["u"] -> Error MissingConsumable
   | "u" :: consumable :: args ->
     let* idx = to_index consumable in
     let* cards = indices args in
-    Ok (Use (idx, cards))
-  | ["r"] -> Ok Reroll
-  | ["s"] -> Ok Leave
+    Ok (Act (Action.Use (idx, cards)))
+  | ["r"] -> Ok (Act Action.Reroll)
+  | ["s"] -> Ok (Act Action.Leave)
   | [("h" | "?")] -> Ok Help
   | ["q"] -> Ok Quit
   | (("r" | "s" | "h" | "?" | "q") as cmd) :: args -> Error (ArgsProvided (cmd, args))
