@@ -411,7 +411,10 @@ let test_shop_offers () =
          | Shop.PlanetItem p ->
            Alcotest.(check bool) (name ^ " is not secret") false (List.mem p secret)
          | Shop.JokerItem j ->
-           Alcotest.(check bool) (name ^ " is not owned") false (List.mem j owned)
+           Alcotest.(check bool)
+             (name ^ " is not owned")
+             false
+             (List.exists (Joker.same_kind j) owned)
          | Shop.TarotItem t ->
            Alcotest.(check bool)
              (name ^ " is implemented")

@@ -55,14 +55,24 @@ let debuff_play boss play =
   | Some boss -> Play.without (Boss.debuffs boss) play
 ;;
 
+let jokers_disabled = function
+  | None -> false
+  | Some boss -> Boss.disables_jokers boss
+;;
+
 let active_jokers boss jokers =
-  match boss with
-  | None -> jokers
-  | Some boss ->
-    if Boss.disables_jokers boss then
-      []
-    else
-      jokers
+  if jokers_disabled boss then
+    []
+  else
+    jokers
+;;
+
+(* Jokers silenced by a boss do not score, and do not react either. *)
+let react_jokers boss event board =
+  if jokers_disabled boss then
+    board
+  else
+    Board.update_jokers (Joker.react event) board
 ;;
 
 let status = function
@@ -91,6 +101,9 @@ let play levels indices blind =
     in
     let score = Play.score levels scored |> Score.apply_all (Joker.all_changes context) in
     let play_chips = Score.total score in
+    (* The jokers react after the play has scored: a Green Joker bought with +0 mult
+       scores 0 on its first hand and 1 on the second. *)
+    let board = react_jokers blind.boss (Joker.Played scored) board in
     Ok
       ( play,
         play_chips,
@@ -112,5 +125,6 @@ let discard indices blind =
     let* board =
       blind |> board |> Board.discard indices |> Result.map_error (fun e -> BoardError e)
     in
+    let board = react_jokers blind.boss Joker.Discarded board in
     Ok { blind with board = Board.refill board; discards_left = discards_left - 1 }
 ;;

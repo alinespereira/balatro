@@ -16,7 +16,42 @@ type t =
   | Banner
   | AbstractJoker
   | Cavendish
-[@@deriving show, eq, enumerate]
+  | GreenJoker of { mult: int }
+  | RideTheBus of { mult: int }
+  | Runner of { chips: int }
+  | IceCream of { chips: int }
+[@@deriving show, eq]
+
+let all =
+  [
+    Joker;
+    GreedyJoker;
+    LustyJoker;
+    WrathfulJoker;
+    GluttonousJoker;
+    JollyJoker;
+    HalfJoker;
+    Banner;
+    AbstractJoker;
+    Cavendish;
+    GreenJoker { mult = 0 };
+    RideTheBus { mult = 0 };
+    Runner { chips = 0 };
+    IceCream { chips = 100 };
+  ]
+;;
+
+let fresh = function
+  | GreenJoker _ -> GreenJoker { mult = 0 }
+  | RideTheBus _ -> RideTheBus { mult = 0 }
+  | Runner _ -> Runner { chips = 0 }
+  | IceCream _ -> IceCream { chips = 100 }
+  | ( Joker | GreedyJoker | LustyJoker | WrathfulJoker | GluttonousJoker | JollyJoker
+    | HalfJoker | Banner | AbstractJoker | Cavendish ) as joker ->
+    joker
+;;
+
+let same_kind a b = equal (fresh a) (fresh b)
 
 (* All the jokers so far are common in Balatro. *)
 let rarity = function
@@ -29,7 +64,11 @@ let rarity = function
   | HalfJoker
   | Banner
   | AbstractJoker
-  | Cavendish ->
+  | Cavendish
+  | GreenJoker _
+  | RideTheBus _
+  | Runner _
+  | IceCream _ ->
     Common
 ;;
 
@@ -37,15 +76,19 @@ let cost = function
   | Joker -> 2
   | JollyJoker -> 3
   | AbstractJoker
-  | Cavendish ->
+  | Cavendish
+  | GreenJoker _ ->
     4
   | GreedyJoker
   | LustyJoker
   | WrathfulJoker
   | GluttonousJoker
   | HalfJoker
-  | Banner ->
+  | Banner
+  | Runner _
+  | IceCream _ ->
     5
+  | RideTheBus _ -> 6
 ;;
 
 let sell_value joker = max 1 (cost joker / 2)
@@ -100,6 +143,46 @@ let changes ctx joker =
   | Banner ->
     let { discards_left; _ } = ctx in
     [Score.AddChips (30 * discards_left)]
+  | GreenJoker { mult }
+  | RideTheBus { mult } ->
+    [Score.AddMult (float_of_int mult)]
+  | Runner { chips }
+  | IceCream { chips } ->
+    [Score.AddChips chips]
 ;;
 
 let all_changes ctx = ctx.jokers |> List.concat_map (changes ctx)
+
+type event =
+  | Played of Play.t
+  | Discarded
+
+let react event joker =
+  match event, joker with
+  | Played _, GreenJoker { mult } -> Some (GreenJoker { mult = mult + 1 })
+  | Discarded, GreenJoker { mult } -> Some (GreenJoker { mult = max 0 (mult - 1) })
+  | Played play, RideTheBus { mult } ->
+    let scoring_cards = Play.scoring_cards play in
+    if
+      List.exists
+        (fun { Card.rank; _ } -> List.mem rank [Card.Jack; Card.Queen; Card.King])
+        scoring_cards
+    then
+      Some (fresh joker)
+    else
+      Some (RideTheBus { mult = mult + 1 })
+  | Played play, Runner { chips } ->
+    (match Play.hand play with
+     | Poker.Hand.Straight
+     | StraightFlush
+     | RoyalFlush ->
+       Some (Runner { chips = chips + 15 })
+     | _ -> Some joker)
+  | Played _, IceCream { chips } ->
+    let chips = chips - 5 in
+    if chips <= 0 then
+      None
+    else
+      Some (IceCream { chips })
+  | _ -> Some joker
+;;

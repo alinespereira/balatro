@@ -30,7 +30,8 @@ val all_items : item list
 
 (** What the shop can offer right now: every item of [all_items] except
 
-    - the jokers in [jokers], the ones already owned: no joker shows up twice;
+    - the jokers in [jokers], the ones already owned: no joker shows up twice, even
+      when the one owned has grown ([Joker.same_kind]);
     - the planets of the secret hands ([Poker.Hand.is_secret]) that were never played,
       according to [levels]. *)
 val available : jokers:Joker.t list -> levels:Poker.Levels.t -> item list

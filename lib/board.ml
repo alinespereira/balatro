@@ -61,6 +61,12 @@ let remove_joker idx board =
   )
 ;;
 
+let update_jokers f board =
+  let { jokers; _ } = board in
+  let jokers = List.filter_map f jokers in
+  { board with jokers }
+;;
+
 let consumables { consumables; _ } = consumables
 
 let add_consumable consumable board =

@@ -129,6 +129,8 @@ let test_board_errors color =
 (* Bosses. *)
 
 let boss = Alcotest.testable Boss.pp Boss.equal
+let joker = Alcotest.testable Joker.pp Joker.equal
+let jokers_of blind = Board.jokers (Blind.board blind)
 
 (* Points of a high card that no card scores for: the level alone. *)
 let bare_high_card =
@@ -185,6 +187,60 @@ let test_muzzle () =
   Alcotest.(check int) "as if there were no jokers" plain_points muzzled_points
 ;;
 
+(* Under the muzzle, the jokers do not react either: the Green Joker does not grow. *)
+let test_muzzle_no_reaction () =
+  let muzzled =
+    fresh_blind
+      ~boss:Boss.Muzzle
+      ~jokers:Joker.[GreenJoker { mult = 0 }]
+      ~target:1_000
+      Deck.Red
+  in
+  let _, _, played = play_ok [0] muzzled in
+  Alcotest.(check (list joker))
+    "green joker stays at 0"
+    Joker.[GreenJoker { mult = 0 }]
+    (jokers_of played)
+;;
+
+(* The jokers react after every play and discard, and the board keeps the new state:
+   the Green Joker grows and shrinks, and the Ice Cream melts on its last 5 chips. *)
+let test_jokers_react color =
+  let blind =
+    fresh_blind
+      ~jokers:Joker.[GreenJoker { mult = 0 }; IceCream { chips = 5 }]
+      ~target:100_000
+      color
+  in
+  let _, _, played = play_ok [0] blind in
+  Alcotest.(check (list joker))
+    "after a play"
+    Joker.[GreenJoker { mult = 1 }]
+    (jokers_of played);
+  let discarded = discard_ok [0] played in
+  Alcotest.(check (list joker))
+    "after a discard"
+    Joker.[GreenJoker { mult = 0 }]
+    (jokers_of discarded)
+;;
+
+(* A Green Joker at +2 adds 2 to the mult of the play. *)
+let test_grown_joker_scores color =
+  let plain = fresh_blind ~target:100_000 color in
+  let grown = fresh_blind ~jokers:Joker.[GreenJoker { mult = 2 }] ~target:100_000 color in
+  let play, plain_points, _ = play_ok [0] plain in
+  let _, grown_points, _ = play_ok [0] grown in
+  let { Score.chips; Score.mult } = Play.score levels play in
+  Alcotest.(check int)
+    "without the joker"
+    (Score.total (Score.create ~chips ~mult))
+    plain_points;
+  Alcotest.(check int)
+    "two more mult"
+    (Score.total (Score.create ~chips ~mult:(mult +. 2.)))
+    grown_points
+;;
+
 let () =
   let color_name = function
     | Deck.Red -> "red"
@@ -201,6 +257,8 @@ let () =
         "won", test_won;
         "lost", test_lost;
         "board errors", test_board_errors;
+        "jokers react", test_jokers_react;
+        "grown joker scores", test_grown_joker_scores;
       ]
   in
   let colors = [Deck.Red; Deck.Blue; Deck.Green] in
@@ -212,6 +270,7 @@ let () =
         "limits", test_boss_limits;
         "eclipse", test_eclipse;
         "muzzle", test_muzzle;
+        "muzzle: no reaction", test_muzzle_no_reaction;
       ]
   in
   Alcotest.run
