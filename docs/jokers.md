@@ -73,5 +73,5 @@ Os jokers reagem **depois** que a jogada pontuou. Sob o chefe que desliga os jok
 1. Um construtor novo em `Joker.t`, no `.mli` e no `.ml`.
 2. Um caso em `rarity`, `cost` e `changes`. O compilador avisa onde falta (warning 8).
 3. O joker na lista `Joker.all`, que é escrita à mão. Se ele tiver estado, um caso em `fresh` e outro em `react`.
-4. Nome e descrição em `Render.joker_name` e `Render.joker_description`.
+4. Nome e descrição em `Label.joker_name` e `Label.joker_description` (`text/label.ml`).
 5. Um caso em `test/test_joker.ml` e uma linha nesta tabela.

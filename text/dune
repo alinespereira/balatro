@@ -1,0 +1,3 @@
+(library
+ (name balatro_text)
+ (libraries balatro))
