@@ -156,13 +156,27 @@ let discard indices board =
   Ok { board with hand = kept; discarded = selected @ board.discarded }
 ;;
 
-(* TODO: check the number of positions against [Consumables.Tarot.selection] first
-   ([WrongSelection]); with no positions there is nothing else to change. Then
-   [validate_indices] checks the positions. One way to rebuild the hand:
-   - the selected positions, sorted, give the selected cards in hand order;
-   - [Consumables.Tarot.change_cards] says what each one became;
-   - [List.combine] pairs each sorted position with its result;
-   - [List.filteri] can't drop and replace at once, but [List.mapi] then
-     [List.filter_map] can: a selected card becomes its result (found with
-     [List.assoc_opt]), the others stay [Some card], and [None] is dropped. *)
-let use_tarot _tarot _indices _board = failwith "TODO: Board.use_tarot"
+let use_tarot tarot indices board =
+  let change_cards tarot indices hand =
+    match tarot, indices with
+    | Consumables.Tarot.TheHermit, [] -> Ok hand
+    | _ ->
+      let* chosen_idx, kept_idx = select indices (List.init (List.length hand) Fun.id) in
+      let* chosen, kept = select indices hand in
+      Ok
+        (Consumables.Tarot.change_cards tarot chosen
+         |> List.combine chosen_idx
+         |> List.append (List.combine kept_idx (List.map Option.some kept))
+         |> List.sort (fun (i, _) (j, _) -> Int.compare i j)
+         |> List.filter_map snd)
+  in
+  let min, max = Consumables.Tarot.selection tarot in
+  let got = List.length indices in
+  if got < min || got > max then
+    Error (WrongSelection { min; max; got })
+  else (
+    let { hand; _ } = board in
+    let* new_hand = change_cards tarot indices hand in
+    Ok { board with hand = new_hand }
+  )
+;;
