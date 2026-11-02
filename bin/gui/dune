@@ -1,11 +1,10 @@
-; The window. It needs raylib, so it is optional: where raylib is not
-; installed (the terminal's CI job, for example), dune skips it.
+; The window. It needs raylib, which only the balatro-gui package depends
+; on: without raylib, build with --only-packages balatro.
 
 (executable
  (public_name balatro-gui)
  (name main)
  (package balatro-gui)
- (optional)
  (libraries balatro balatro_text balatro_cli raylib ctypes))
 
 (rule

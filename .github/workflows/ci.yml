@@ -36,7 +36,7 @@ jobs:
           key: opam-ci-${{ runner.os }}-5.4.1-ocamlformat-0.29.0-${{ hashFiles('balatro.opam') }}
 
       # Only the terminal game's dependencies: raylib belongs to balatro-gui,
-      # built by the job below. Without raylib, dune skips the window.
+      # built by the job below. The build and the tests leave that package out.
       - name: Install dependencies
         run: opam install ./balatro.opam --deps-only --with-test --yes
 
@@ -47,10 +47,10 @@ jobs:
         run: opam exec -- dune build @fmt
 
       - name: Build
-        run: opam exec -- dune build @all
+        run: opam exec -- dune build @all --only-packages balatro
 
       - name: Run tests
-        run: opam exec -- dune runtest --force
+        run: opam exec -- dune runtest --force --only-packages balatro
 
   gui:
     name: Build the window (Linux)
