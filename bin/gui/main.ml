@@ -49,12 +49,12 @@ let draw font run =
 ;;
 
 let rec frame font run =
-  if not (Raylib.window_should_close ())
-  then (
+  if not (Raylib.window_should_close ()) then (
     Raylib.begin_drawing ();
     draw font run;
     Raylib.end_drawing ();
-    frame font run)
+    frame font run
+  )
 ;;
 
 let () =
