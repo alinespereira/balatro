@@ -33,10 +33,12 @@ jobs:
         uses: actions/cache@v5
         with:
           path: _opam
-          key: opam-ci-${{ runner.os }}-5.4.1-ocamlformat-0.29.0-${{ hashFiles('*.opam') }}
+          key: opam-ci-${{ runner.os }}-5.4.1-ocamlformat-0.29.0-${{ hashFiles('balatro.opam') }}
 
+      # Only the terminal game's dependencies: raylib belongs to balatro-gui,
+      # built by the job below. Without raylib, dune skips the window.
       - name: Install dependencies
-        run: opam install . --deps-only --with-test --yes
+        run: opam install ./balatro.opam --deps-only --with-test --yes
 
       - name: Install ocamlformat
         run: opam install ocamlformat.0.29.0 --yes
@@ -49,3 +51,40 @@ jobs:
 
       - name: Run tests
         run: opam exec -- dune runtest --force
+
+  gui:
+    name: Build the window (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # raylib is C code compiled when opam installs it, and it needs the
+      # OpenGL and X11 headers of the system.
+      - name: Install raylib's system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev \
+            libxi-dev libxinerama-dev libxrandr-dev
+
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.4.1"
+
+      # Its own cache: only the first run after a dependency change pays for
+      # compiling raylib.
+      - name: Cache opam packages
+        uses: actions/cache@v5
+        with:
+          path: _opam
+          key: opam-gui-${{ runner.os }}-5.4.1-${{ hashFiles('*.opam') }}
+
+      - name: Install dependencies
+        run: opam install . --deps-only --yes
+
+      # There is no screen here, so the window is only compiled, not run.
+      - name: Build
+        run: opam exec -- dune build @all

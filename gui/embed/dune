@@ -1,0 +1,5 @@
+; Turns a file into an OCaml module with its bytes in a string, so the
+; executable carries the font with it.
+
+(executable
+ (name embed))

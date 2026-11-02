@@ -1,0 +1,17 @@
+; The window. It needs raylib, so it is optional: where raylib is not
+; installed (the terminal's CI job, for example), dune skips it.
+
+(executable
+ (public_name balatro-gui)
+ (name main)
+ (package balatro-gui)
+ (optional)
+ (libraries balatro balatro_text balatro_cli raylib ctypes))
+
+(rule
+ (target font_data.ml)
+ (deps ../../gui/assets/DejaVuSans.ttf)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{exe:../../gui/embed/embed.exe} %{deps}))))
