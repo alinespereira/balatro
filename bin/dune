@@ -1,4 +1,4 @@
 (executable
  (public_name balatro)
  (name main)
- (libraries balatro balatro_cli unix))
+ (libraries balatro balatro_text balatro_cli unix))

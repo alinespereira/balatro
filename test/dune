@@ -7,6 +7,7 @@
   test_command
   test_hand
   test_joker
+  test_label
   test_money
   test_planet
   test_play
@@ -14,4 +15,4 @@
   test_run
   test_shop
   test_tarot)
- (libraries balatro balatro_cli alcotest))
+ (libraries balatro balatro_text balatro_cli alcotest))

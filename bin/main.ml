@@ -1,4 +1,5 @@
 open Balatro
+open Balatro_text
 open Balatro_cli
 
 let wait () = Unix.sleepf 1.5
@@ -41,7 +42,7 @@ let rec loop ?(help = false) rng (run : Run.t) : unit =
      | Ok (Command.Act action) ->
        (match Action.apply rng action run with
         | Error e ->
-          print_endline (Render.error e);
+          print_endline (Label.error e);
           loop rng run
         | Ok (Action.Done, next) -> loop rng next
         | Ok (Action.Played (play, points), next) ->
