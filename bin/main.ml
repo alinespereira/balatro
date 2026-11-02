@@ -32,42 +32,32 @@ let rec loop ?(help = false) rng (run : Run.t) : unit =
   match In_channel.input_line stdin with
   | None -> ()
   | Some line ->
-    let continue_with = function
-      | Error e ->
-        print_endline (Render.error e);
-        loop rng run
-      | Ok next -> loop rng next
-    in
     (match Command.parse line with
      | Error e ->
        print_endline (Command.error_message e);
        loop rng run
      | Ok Command.Help -> loop rng run ~help:true
      | Ok Command.Quit -> ()
-     | Ok (Command.Play indices) ->
-       (match Run.play indices run with
+     | Ok (Command.Act action) ->
+       (match Action.apply rng action run with
         | Error e ->
           print_endline (Render.error e);
           loop rng run
-        | Ok (play, points, new_run) ->
+        | Ok (Action.Done, next) -> loop rng next
+        | Ok (Action.Played (play, points), next) ->
           print_endline (Render.play play points);
-          (match Run.status new_run with
-           | InProgress when Blind.status (Run.blind new_run) = Blind.Won ->
-             (match Run.cash_out rng new_run with
-              | Ok (payout, shopping) ->
-                print_endline "Blind vencido!";
-                print_endline (Render.payout payout);
-                loop rng shopping
-              | Error e -> print_endline (Render.error e))
-           | InProgress -> loop rng new_run
-           | Won -> print_endline "Você venceu!"
-           | Lost -> print_endline "Você perdeu!"))
-     | Ok (Command.Discard indices) -> continue_with (Run.discard indices run)
-     | Ok (Command.Buy idx) -> continue_with (Run.buy idx run)
-     | Ok (Command.Sell idx) -> continue_with (Run.sell_joker idx run)
-     | Ok (Command.Use (idx, cards)) -> continue_with (Run.use_consumable idx cards run)
-     | Ok Command.Reroll -> continue_with (Run.reroll rng run)
-     | Ok Command.Leave -> continue_with (Run.leave_shop rng run))
+          loop rng next
+        | Ok (Action.BlindWon (play, points, payout), next) ->
+          print_endline (Render.play play points);
+          print_endline "Blind vencido!";
+          print_endline (Render.payout payout);
+          loop rng next
+        | Ok (Action.RunWon (play, points), _) ->
+          print_endline (Render.play play points);
+          print_endline "Você venceu!"
+        | Ok (Action.RunLost (play, points), _) ->
+          print_endline (Render.play play points);
+          print_endline "Você perdeu!"))
 ;;
 
 let () =
