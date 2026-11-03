@@ -59,7 +59,7 @@ let rec frame font =
 
 let () =
   (* Smooth edges on circles and triangles. *)
-  Raylib.set_config_flags Raylib.ConfigFlags.Msaa_4x_hint;
+  Raylib.set_config_flags Raylib.ConfigFlags.msaa_4x_hint;
   Raylib.init_window width height "Balatro: as cartas";
   Raylib.set_target_fps 60;
   let font = Typeface.load () in
