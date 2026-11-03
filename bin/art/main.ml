@@ -10,10 +10,11 @@ let background = Raylib.Color.create 28 74 52 255
 let gap = 14.
 
 let cards =
-  [ Card.create Spades Ace
-  ; Card.create Hearts Seven
-  ; Card.create Diamonds Ten
-  ; Card.create Clubs King
+  [
+    Card.create Spades Ace;
+    Card.create Hearts Seven;
+    Card.create Diamonds Ten;
+    Card.create Clubs King;
   ]
 ;;
 
@@ -30,7 +31,8 @@ let draw font =
        Card_art.draw_suit suit ~center ~size:50. (Card_art.suit_color suit))
     Card.all_of_suit;
   List.iteri
-    (fun i card -> Card_art.draw_front font card ~at:(Raylib.Vector2.create (column i) 190.))
+    (fun i card ->
+       Card_art.draw_front font card ~at:(Raylib.Vector2.create (column i) 190.))
     cards;
   List.iteri
     (fun i color ->

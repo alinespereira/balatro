@@ -6,4 +6,3 @@
  (name main)
  (package balatro-gui)
  (libraries balatro balatro_text balatro_cli balatro_art raylib))
-

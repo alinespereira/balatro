@@ -14,7 +14,12 @@ val suit_color : Card.suit -> Raylib.Color.t
 (** [draw_suit suit ~center ~size color] draws the symbol of [suit] around [center].
     [size] is about half the width of the symbol, so the same function draws the small
     symbol in the corner and the big one in the middle. *)
-val draw_suit : Card.suit -> center:Raylib.Vector2.t -> size:float -> Raylib.Color.t -> unit
+val draw_suit
+  :  Card.suit ->
+  center:Raylib.Vector2.t ->
+  size:float ->
+  Raylib.Color.t ->
+  unit
 
 (** The face of a card, with its top-left corner at [at]. *)
 val draw_front : Raylib.Font.t -> Card.t -> at:Raylib.Vector2.t -> unit

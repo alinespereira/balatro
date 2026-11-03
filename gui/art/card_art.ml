@@ -12,8 +12,12 @@ let red = Color.create 222 72 64 255
 let unfinished = Color.create 190 186 178 255
 
 let suit_color : Card.suit -> Color.t = function
-  | Hearts | Diamonds -> red
-  | Clubs | Spades -> ink
+  | Hearts
+  | Diamonds ->
+    red
+  | Clubs
+  | Spades ->
+    ink
 ;;
 
 let deck_color : Deck.color -> Color.t = function
@@ -32,13 +36,18 @@ let point center dx dy = Vector2.create (Vector2.x center +. dx) (Vector2.y cent
 let triangle a b c color =
   let open Vector2 in
   let cross = ((x b -. x a) *. (y c -. y a)) -. ((y b -. y a) *. (x c -. x a)) in
-  if cross < 0. then draw_triangle a b c color else draw_triangle a c b color
+  if cross < 0. then
+    draw_triangle a b c color
+  else
+    draw_triangle a c b color
 ;;
 
 (* A grey circle with a cross, for the suits that do not have a drawing yet. *)
 let placeholder ~center ~size =
   draw_circle_v center size unfinished;
-  let line dx dy = draw_line_ex (point center (-.dx) (-.dy)) (point center dx dy) 3. paper in
+  let line dx dy =
+    draw_line_ex (point center (-.dx) (-.dy)) (point center dx dy) 3. paper
+  in
   line (size *. 0.5) (size *. 0.5);
   line (size *. 0.5) (-.size *. 0.5)
 ;;
@@ -58,7 +67,10 @@ let draw_diamond ~center ~size color =
 let draw_suit (suit : Card.suit) ~center ~size color =
   match suit with
   | Diamonds -> draw_diamond ~center ~size color
-  | Hearts | Spades | Clubs -> placeholder ~center ~size
+  | Hearts
+  | Spades
+  | Clubs ->
+    placeholder ~center ~size
 ;;
 
 (* A rounded rectangle: [roundness] goes from 0 (square corners) to 1 (a pill). *)
@@ -77,7 +89,13 @@ let draw_front font (card : Card.t) ~at =
   let color = suit_color card.suit in
   frame ~at paper;
   let text_size = float_of_int Typeface.size in
-  draw_text_ex font (Balatro_text.Label.rank card.rank) (point at 12. 8.) text_size 1. color;
+  draw_text_ex
+    font
+    (Balatro_text.Label.rank card.rank)
+    (point at 12. 8.)
+    text_size
+    1.
+    color;
   draw_suit card.suit ~center:(point at 21. 48.) ~size:8. color;
   draw_suit card.suit ~center:(point at (width /. 2.) (height /. 2.)) ~size:26. color
 ;;
