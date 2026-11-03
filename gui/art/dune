@@ -1,8 +1,10 @@
-; The drawings of the game: cards and fonts, made with raylib shapes.
+; The drawings of the game: cards and fonts, made with raylib shapes. It is
+; not attached to balatro-gui because it uses the private balatro libraries;
+; (optional) lets the terminal's build skip it when raylib is not installed.
 
 (library
  (name balatro_art)
- (package balatro-gui)
+ (optional)
  (libraries balatro balatro_text raylib ctypes))
 
 (rule
