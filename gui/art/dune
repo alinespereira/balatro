@@ -1,0 +1,14 @@
+; The drawings of the game: cards and fonts, made with raylib shapes.
+
+(library
+ (name balatro_art)
+ (package balatro-gui)
+ (libraries balatro balatro_text raylib ctypes))
+
+(rule
+ (target font_data.ml)
+ (deps ../assets/DejaVuSans.ttf)
+ (action
+  (with-stdout-to
+   %{target}
+   (run %{exe:../embed/embed.exe} %{deps}))))

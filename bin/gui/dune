@@ -5,12 +5,5 @@
  (public_name balatro-gui)
  (name main)
  (package balatro-gui)
- (libraries balatro balatro_text balatro_cli raylib ctypes))
+ (libraries balatro balatro_text balatro_cli balatro_art raylib))
 
-(rule
- (target font_data.ml)
- (deps ../../gui/assets/DejaVuSans.ttf)
- (action
-  (with-stdout-to
-   %{target}
-   (run %{exe:../../gui/embed/embed.exe} %{deps}))))

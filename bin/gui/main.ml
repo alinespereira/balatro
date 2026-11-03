@@ -4,28 +4,11 @@
 open Balatro
 open Balatro_text
 open Balatro_cli
+open Balatro_art
 
 let width = 960
 let height = 540
-let font_size = 24
 let line_height = 32.
-
-(* raylib only draws the characters its font was loaded with: ASCII, the accented
-   letters of Latin-1 and the four suits. *)
-let codepoints =
-  List.init 95 (fun i -> 32 + i)
-  @ List.init 96 (fun i -> 160 + i)
-  @ [0x2660; 0x2663; 0x2665; 0x2666]
-;;
-
-(* Needs the window: raylib uploads the font to the graphics card. *)
-let load_font () =
-  Raylib.load_font_from_memory
-    ".ttf"
-    Font_data.contents
-    font_size
-    (Ctypes.CArray.of_list Ctypes.int codepoints)
-;;
 
 let draw_lines font ~x ~y lines =
   List.iteri
@@ -35,7 +18,7 @@ let draw_lines font ~x ~y lines =
          font
          line
          position
-         (float_of_int font_size)
+         (float_of_int Typeface.size)
          1.
          Raylib.Color.raywhite)
     lines
@@ -60,7 +43,7 @@ let rec frame font run =
 let () =
   Raylib.init_window width height "Balatro";
   Raylib.set_target_fps 60;
-  let font = load_font () in
+  let font = Typeface.load () in
   let rng = Random.State.make_self_init () in
   frame font (Run.create rng Deck.Red);
   Raylib.close_window ()
