@@ -1,0 +1,7 @@
+; A window that shows the drawings of the cards, to see them while drawing.
+
+(executable
+ (public_name balatro-art)
+ (name main)
+ (package balatro-gui)
+ (libraries balatro balatro_art raylib))
