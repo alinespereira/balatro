@@ -12,8 +12,9 @@ let card_height = 112.
 let gap = 12.
 let selected_lift = 24.
 
-(* TODO(Aline): compare [x] with [r.x] and [r.x +. r.width], and [y] the same way. *)
-let contains (_ : rect) (_ : float * float) : bool = failwith "TODO: Layout.contains"
+let contains { x = rx; y = ry; width; height } (x, y) =
+  rx <= x && x <= rx +. width && ry <= y && y <= ry +. height
+;;
 
 let cards ~selected n =
   let total = (float_of_int n *. card_width) +. (float_of_int (n - 1) *. gap) in
