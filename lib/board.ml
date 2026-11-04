@@ -34,6 +34,7 @@ let ( let* ) = Result.bind
 let deck { deck; _ } = deck
 let hand { hand; _ } = hand
 let discarded { discarded; _ } = discarded
+let hand_size { hand_size; _ } = hand_size
 let jokers { jokers; _ } = List.rev jokers
 
 let add_joker joker board =

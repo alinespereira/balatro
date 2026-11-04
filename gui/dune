@@ -1,0 +1,6 @@
+; What the window shows and how it reacts to clicks, without raylib: these
+; modules are plain OCaml, so the tests run them in CI like the rest.
+
+(library
+ (name balatro_gui)
+ (libraries balatro balatro_text))

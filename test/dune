@@ -5,6 +5,7 @@
   test_board
   test_boss
   test_command
+  test_gui
   test_hand
   test_joker
   test_label
@@ -15,4 +16,4 @@
   test_run
   test_shop
   test_tarot)
- (libraries balatro balatro_text balatro_cli alcotest))
+ (libraries balatro balatro_text balatro_cli balatro_gui alcotest))
