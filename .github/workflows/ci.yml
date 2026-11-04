@@ -53,17 +53,31 @@ jobs:
         run: opam exec -- dune runtest --force --only-packages balatro
 
   gui:
-    name: Build the window (Linux)
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The same steps on the three systems. raylib is C code that opam
+    # compiles from source, so each system needs its own build.
+    name: Build the window (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      # Keep building on the other systems even if one of them fails.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-latest
+          - name: Windows
+            os: windows-latest
+          - name: macOS
+            os: macos-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      # raylib is C code compiled when opam installs it, and it needs the
-      # OpenGL and X11 headers of the system.
+      # On Linux, raylib needs the OpenGL and X11 headers of the system.
+      # Windows and macOS already ship what it uses (OpenGL, Cocoa, GDI).
       - name: Install raylib's system libraries
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgl1-mesa-dev libx11-dev libxcursor-dev \
