@@ -35,10 +35,8 @@ let cards ~selected n =
     })
 ;;
 
-(* TODO(Aline): look for the first rectangle of [cards ~selected n] that [contains]
-   the point, and return its position. [List.find_index] may help. *)
-let card_at ~selected:(_ : int list) (_ : int) (_ : float * float) : int option =
-  failwith "TODO: Layout.card_at"
+let card_at ~selected n point =
+  cards ~selected n |> List.find_index (fun rect -> contains rect point)
 ;;
 
 let button_width = 160.

@@ -1,18 +1,34 @@
 open Balatro
+open Balatro_text
 
 type event = Click of float * float
 
-(* TODO(Aline): if [idx] is already in [selected], take it out; otherwise add it,
-   unless there are already [Board.max_selected] cards. *)
-let toggle (_ : int) (_ : int list) : int list = failwith "TODO: Update.toggle"
+let toggle idx selected =
+  match List.partition (( = ) idx) selected with
+  | [], rest when List.length rest < Board.max_selected -> idx :: rest
+  | _, rest -> rest
+;;
 
-(* TODO(Aline): one string per outcome, in Portuguese. [Balatro_text.Label.hand_name]
-   and [Payout.total] help. *)
-let message (_ : Action.outcome) : string option = failwith "TODO: Update.message"
+let message = function
+  | Action.Played (play, chips) ->
+    let hand_name = Label.hand_name (Play.hand play) in
+    Some (Format.sprintf "%s" hand_name)
+  | BlindWon (play, chips, payout) -> Some (Format.sprintf "Você venceu")
+  | RunWon (play, chips) -> Some (Format.sprintf "Você venceu")
+  | RunLost (play, chips) -> Some (Format.sprintf "Você perdeu")
+  | Done -> None
+;;
 
-(* TODO(Aline): look at [Run.status] and [Run.phase] first. While playing, find what
-   the click hit with [Layout.card_at] and [Layout.contains], and use [Action.apply]
-   for the buttons. *)
-let step (_ : Random.State.t) (_ : event) (_ : Model.t) : Model.t =
-  failwith "TODO: Update.step"
+let step rng e { Model.run; selected; message } : Model.t =
+  match Run.status run, Run.phase run with
+  | Run.InProgress, Run.Playing ->
+    (match e with
+     | Click (x, y) ->
+       let hand_size = Run.board run |> Board.hand_size in
+       (match Layout.card_at ~selected hand_size (x, y) with
+        | Some idx ->
+          let selected = toggle idx selected in
+          { run; selected; message }
+        | None -> { run; selected; message }))
+  | _ -> failwith "TODO: Update.step"
 ;;

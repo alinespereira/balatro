@@ -41,6 +41,7 @@ val reset : Random.State.t -> t -> t
 
 val deck : t -> Deck.t
 val hand : t -> Card.t list
+val hand_size : t -> int 
 
 (** The jokers owned, in the order they score: left to right. *)
 val jokers : t -> Joker.t list
